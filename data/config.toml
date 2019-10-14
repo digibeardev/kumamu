@@ -1,0 +1,6 @@
+# KumaMU main configuration file.
+
+[database]
+  name = "kumamu"
+  username = "root"
+  password = ""

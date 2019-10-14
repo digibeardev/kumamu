@@ -1,0 +1,44 @@
+{
+  "name": "kumamu",
+  "version": "0.1.0",
+  "description": "",
+  "main": "./src/index.js",
+  "nodemonConfig": {
+    "ignore": [
+      "plugins/*",
+      "src/**/*.js",
+      "src/**/*.map.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./src",
+    "compile": "tsc -p ./src && node ./src/dist/index",
+    "dev": "tsc -p ./src  -w",
+    "start": "nodemon --watch src/ --exec \"npm run compile\"  --verbose -e ts",
+    "copy": "cpx"
+  },
+  "keywords": [
+    "MUSH",
+    "MUX",
+    "MUD",
+    "TELNET",
+    "ECS",
+    "WEBSOCKETS"
+  ],
+  "author": "Lemuel Canady",
+  "license": "",
+  "dependencies": {
+    "arangojs": "^6.11.1",
+    "lodash": "^4.17.15",
+    "pegjs": "^0.10.0",
+    "telnet-stream": "^1.0.4",
+    "toml": "^3.0.0",
+    "ts-pegjs": "^0.2.6"
+  },
+  "devDependencies": {
+    "@types/arangodb": "^3.5.2",
+    "@types/lodash": "^4.14.144",
+    "@types/pegjs": "^0.10.1",
+    "typescript": "^3.6.4"
+  }
+}
