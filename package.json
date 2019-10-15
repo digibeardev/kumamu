@@ -12,10 +12,10 @@
   },
   "scripts": {
     "build": "tsc -p ./src",
-    "compile": "tsc -p ./src && node ./src/dist/index",
+    "compile": "tsc -p ./src && npm run copy && node ./src/dist/index",
     "dev": "tsc -p ./src  -w",
     "start": "nodemon --watch src/ --exec \"npm run compile\"  --verbose -e ts",
-    "copy": "cpx"
+    "copy": "cpx ./src/mushcode.pegjs ./src/dist/"
   },
   "keywords": [
     "MUSH",

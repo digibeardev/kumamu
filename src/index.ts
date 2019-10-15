@@ -1,5 +1,8 @@
 import app from "./classes/engine";
 
-app.start();
-
-console.log(JSON.stringify(app));
+(async () => {
+  await app.start();
+  console.log(
+    await app.parser.evaluate("2", app.parser.parse("[add(1,2)]"), {})
+  );
+})();

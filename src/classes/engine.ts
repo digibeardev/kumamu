@@ -42,15 +42,17 @@ class Engine implements IEngine {
   }
 
   private async loadApi() {
-    const dir = readdirSync(resolve(__dirname, "../api/"));
+    let dir = readdirSync(resolve(__dirname, "../api/"));
     for (const file of dir) {
-      const mod = await import(`../api/${file}`).catch(error =>
-        console.log(error)
-      );
       const parts: string[] = file.split(".");
-      this[parts[0]] = mod;
-      this.api.set(parts[0], { mod, file });
-      console.log(`API Loaded: ${parts[0]}`);
+      if (!this[parts[0]]) {
+        const mod = await import(`../api/${file}`).catch(error =>
+          console.log(error)
+        );
+        this[parts[0]] = mod.default;
+        this.api.set(parts[0], { mod: mod.default, file });
+        console.log(`API Loaded: ${parts[0]}`);
+      }
     }
   }
 
@@ -85,7 +87,7 @@ class Engine implements IEngine {
     return "Not implemented yet!";
   }
 
-  public async handle(socket: any, data: any) {}
+  private async handle(socket: any, data: any) {}
 }
 
 export default new Engine();

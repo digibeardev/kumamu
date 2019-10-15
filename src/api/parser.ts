@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { IDbObj } from "./db/lib/objects";
+import { getFiles } from "../utils/utilities";
 
 const peg = require("pegjs");
 
@@ -17,14 +18,14 @@ export interface Expr {
   type: string;
   value: any;
   operator: Operator;
-  args?: string[];
+  args?: Expr[];
 }
-class Parser {
+export class Parser {
   private peg: any;
   private parser: any;
   private functions: Map<
     string,
-    (en: IDbObj, args: Expr[], scope: Scope) => void
+    (en: IDbObj, args: Expr[], scope: Scope) => Promise<string>
   >;
 
   constructor() {
@@ -33,6 +34,17 @@ class Parser {
     });
     this.parser = peg.generate(this.peg);
     this.functions = new Map();
+    this.init();
+  }
+
+  private async init() {
+    const files = getFiles(resolve(__dirname, "../functions/"));
+    for (const file of files.filter(file => !file.match(/.*map$/))) {
+      const mod = await import(resolve(__dirname, "../functions/", file)).catch(
+        error => console.log(error)
+      );
+      await mod.default();
+    }
   }
 
   /**
@@ -89,7 +101,7 @@ class Parser {
     } else if ((expr.type = "function")) {
       const operator: Operator = expr.operator;
       if (operator.type === "word" && this.functions.has(operator.value)) {
-        return await this.functions.get(operator.value)!(en, expr.value, scope);
+        return await this.functions.get(operator.value)!(en, expr.args!, scope);
       }
     } else if (expr.type === "list") {
       let output = "";
@@ -98,6 +110,8 @@ class Parser {
       }
 
       return output;
+    } else {
+      throw new Error("Unknown Expression: ");
     }
   }
 
