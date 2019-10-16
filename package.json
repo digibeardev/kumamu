@@ -11,11 +11,12 @@
     ]
   },
   "scripts": {
+    "clean": "rimraj ./src/dist/**",
     "build": "tsc -p ./src",
-    "compile": "tsc -p ./src && npm run copy && node ./src/dist/index",
+    "compile": "concurrently \"npm run clean\"  \"cpx ./src/*.pegjs ./src/dist/\" \"npm run build\" ",
     "dev": "tsc -p ./src  -w",
     "start": "nodemon --watch src/ --exec \"npm run compile\"  --verbose -e ts",
-    "copy": "cpx ./src/mushcode.pegjs ./src/dist/"
+    "copy": "cpx ./src/*.pegjs ./src/dist/"
   },
   "keywords": [
     "MUSH",
@@ -30,6 +31,8 @@
   "dependencies": {
     "arangojs": "^6.11.1",
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "momentjs": "^2.0.0",
     "pegjs": "^0.10.0",
     "telnet-stream": "^1.0.4",
     "toml": "^3.0.0",

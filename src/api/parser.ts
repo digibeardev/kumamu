@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { IDbObj } from "./db/lib/objects";
+import { IDbObj } from "./db/lib/objs";
 import { getFiles } from "../utils/utilities";
 
 const peg = require("pegjs");
@@ -38,13 +38,10 @@ export class Parser {
   }
 
   private async init() {
-    const files = getFiles(resolve(__dirname, "../functions/"));
-    for (const file of files.filter(file => !file.match(/.*map$/))) {
-      const mod = await import(resolve(__dirname, "../functions/", file)).catch(
-        error => console.log(error)
-      );
+    getFiles("../functions/", async (path, file) => {
+      const mod = await import(path + file).catch(error => console.log(error));
       await mod.default();
-    }
+    });
   }
 
   /**

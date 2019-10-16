@@ -1,20 +1,36 @@
 import { readdirSync } from "fs";
 import { resolve } from "path";
+import { getFiles } from "../utils/utilities";
+import { Socket } from "net";
+const moment = require("moment");
 
 export interface IEngine {
   use: (func: FuncUseType) => Promise<void>;
   exe: (socket: any, command: string, args: string[]) => Promise<string>;
   start: () => Promise<void>;
+  handle: (socket: Socket, data: any) => Promise<void>;
   [key: string]: any;
 }
 
-type FuncUseType = (
-  socket: any,
-  data: any,
-  next: FuncNextType
-) => Promise<FuncNextType>;
+export interface APIModule {
+  start: () => Promise<void>;
+  restart: () => Promise<void>;
+}
 
-type FuncNextType = (error: Error, data: any) => void;
+export interface apiEntry {
+  mod: APIModule;
+  file: string;
+}
+
+export interface IDataWrapper {
+  input: any;
+  socket: any;
+  game: any;
+  ran: Boolean;
+}
+
+type FuncUseType = (data: any, next: any) => Promise<FuncNextType>;
+type FuncNextType = (error: Error | null, data?: any) => Promise<void>;
 
 class Engine implements IEngine {
   private stack: FuncUseType[];
@@ -35,6 +51,19 @@ class Engine implements IEngine {
     console.log("Loading Plugins.");
     await this.loadPlugins();
     console.log("Plugins Loaded.");
+    console.log("Loading Systems.");
+    await this.loadSystems();
+    console.log("Systems Loaded.");
+  }
+
+  private async loadSystems() {
+    getFiles("../systems/", async (path, file) => {
+      let mod = await import(path + file);
+      if (typeof mod.default === "function") {
+        mod.default();
+        console.log(`System: '${file.split(".")[0]}' loaded.`);
+      }
+    });
   }
 
   public async use(func: FuncUseType) {
@@ -51,17 +80,20 @@ class Engine implements IEngine {
         );
         this[parts[0]] = mod.default;
         this.api.set(parts[0], { mod: mod.default, file });
+        if (mod.default.start) {
+          await this.api.get(parts[0])!.mod.start();
+        }
         console.log(`API Loaded: ${parts[0]}`);
       }
     }
   }
 
   private async loadPlugin(folder: string) {
-    const config = await import(`../../plugins/${folder}/package.json`);
+    const config = await import(`../../../plugins/${folder}/package.json`);
     if (config) {
       const file = config.main ? config.main : "index.js";
       const parts = folder.split("/");
-      const plugin = await import(`../../plugins/${folder}/${file}`).catch(
+      const plugin = await import(`../../../plugins/${folder}/${file}`).catch(
         error => console.log(error)
       );
       this.plugins.set(parts.pop()!, plugin);
@@ -87,7 +119,34 @@ class Engine implements IEngine {
     return "Not implemented yet!";
   }
 
-  private async handle(socket: any, data: any) {}
+  public async handle(socket: any, data: any) {
+    let idx = 0;
+    const dataWrapper: IDataWrapper = {
+      input: data,
+      socket,
+      game: this,
+      ran: false
+    };
+
+    socket.timestamp = moment().unix();
+
+    const next = async (err: Error | null, dataWrapper: any) => {
+      if (err !== null) setImmediate(() => console.log(err));
+      if (dataWrapper.ran) setImmediate(() => Promise.resolve(dataWrapper));
+      if (idx >= this.stack.length && !dataWrapper.ran) {
+        return setImmediate(async () => {
+          console.log("Huh message!");
+        });
+      }
+
+      const layer = this.stack[idx++];
+      setImmediate(async () => {
+        await layer(dataWrapper, next).catch(error => next(error, null));
+      });
+    };
+
+    next(null, dataWrapper);
+  }
 }
 
 export default new Engine();

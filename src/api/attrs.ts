@@ -1,4 +1,4 @@
-import db from "./db";
+import db from "./db/DatabaseClass";
 
 export interface Attribute {
   key: string;

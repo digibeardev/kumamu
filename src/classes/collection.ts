@@ -1,10 +1,10 @@
-import db from "../api/db";
+import db from "../api/db/DatabaseClass";
 import {
   ArangoCollection,
   DocumentCollection
 } from "arangojs/lib/cjs/collection";
 import { DocumentData } from "arangojs/lib/cjs/util/types";
-import { IDbObj } from "../api/db/lib/objects";
+import { IDbObj } from "../api/db/lib/objs";
 
 export interface ICollection {
   init: () => Promise<void>;
