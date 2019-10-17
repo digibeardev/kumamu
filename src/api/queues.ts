@@ -1,9 +1,9 @@
 import { Socket } from "net";
 
 class Queue {
-  private pQueue: string[];
-  private oQueue: string[];
-  private sockets: Map<string, Socket>;
+  pQueue: string[];
+  oQueue: string[];
+  sockets: Map<string, Socket>;
   constructor() {
     this.pQueue = [];
     this.oQueue = [];

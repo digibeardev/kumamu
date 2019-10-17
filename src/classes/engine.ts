@@ -1,14 +1,15 @@
 import { readdirSync } from "fs";
 import { resolve } from "path";
-import { getFiles } from "../utils/utilities";
+import { getFiles, getModules } from "../utils/utilities";
 import { Socket } from "net";
+import { ICommand } from "middleware/cmds";
 const moment = require("moment");
 
 export interface IEngine {
   use: (func: FuncUseType) => Promise<void>;
   exe: (socket: any, command: string, args: string[]) => Promise<string>;
   start: () => Promise<void>;
-  handle: (socket: Socket, data: any) => Promise<void>;
+  handle: (socket: Socket, data: any, scope: object) => Promise<void>;
   [key: string]: any;
 }
 
@@ -25,22 +26,25 @@ export interface apiEntry {
 export interface IDataWrapper {
   input: any;
   socket: any;
+  scope: object;
   game: any;
   ran: Boolean;
 }
 
 type FuncUseType = (data: any, next: any) => Promise<FuncNextType>;
-type FuncNextType = (error: Error | null, data?: any) => Promise<void>;
+export type FuncNextType = (error: Error | null, data?: any) => Promise<void>;
 
 class Engine implements IEngine {
   private stack: FuncUseType[];
   private api: Map<string, { mod: any; file: string }>;
   private plugins: Map<string, any>;
+  private cmds: Map<string, ICommand[]>;
   [key: string]: any;
 
   constructor() {
     this.stack = [];
     this.api = new Map();
+    this.cmds = new Map();
     this.plugins = new Map();
   }
 
@@ -57,13 +61,7 @@ class Engine implements IEngine {
   }
 
   private async loadSystems() {
-    getFiles("../systems/", async (path, file) => {
-      let mod = await import(path + file);
-      if (typeof mod.default === "function") {
-        mod.default();
-        console.log(`System: '${file.split(".")[0]}' loaded.`);
-      }
-    });
+    await getModules("../systems/");
   }
 
   public async use(func: FuncUseType) {
@@ -71,21 +69,10 @@ class Engine implements IEngine {
   }
 
   private async loadApi() {
-    let dir = readdirSync(resolve(__dirname, "../api/"));
-    for (const file of dir.filter(file => !file.match(/.*.map$/))) {
-      const parts: string[] = file.split(".");
-      if (!this[parts[0]]) {
-        const mod = await import(`../api/${file}`).catch(error =>
-          console.log(error)
-        );
-        this[parts[0]] = await mod.default;
-        this.api.set(parts[0], { mod: mod.default, file });
-        if (mod.default.start) {
-          await this.api.get(parts[0])!.mod.start();
-        }
-        console.log(`API Loaded: ${parts[0]}`);
-      }
-    }
+    await getModules("../api/", (file, _, mod) => {
+      const parts = file.split(".");
+      this[parts[0]] = mod.default;
+    });
   }
 
   private async loadPlugin(folder: string) {
@@ -119,11 +106,12 @@ class Engine implements IEngine {
     return "Not implemented yet!";
   }
 
-  public async handle(socket: any, data: any) {
+  public async handle(socket: any, data: any, scope: object) {
     let idx = 0;
     const dataWrapper: IDataWrapper = {
       input: data,
       socket,
+      scope,
       game: this,
       ran: false
     };

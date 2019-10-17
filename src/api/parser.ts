@@ -39,7 +39,9 @@ export class Parser {
 
   private async init() {
     getFiles("../functions/", async (path, file) => {
-      const mod = await import(path + file).catch(error => console.log(error));
+      const mod = await import(path + file.name).catch(error =>
+        console.log(error)
+      );
       await mod.default();
     });
   }
