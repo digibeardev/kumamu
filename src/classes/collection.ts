@@ -8,7 +8,7 @@ import { IDbObj } from "../api/db/lib/objs";
 
 export interface ICollection {
   init: () => Promise<void>;
-  id: (ref: string) => Promise<IDbObj>;
+  id: (ref: string) => Promise<IDbObj> | Promise<void>;
   delete: (key: DocumentData, record: DocumentData) => Promise<any>;
   save: (key: DocumentData, record: DocumentData) => Promise<any>;
   update: (key: DocumentData, update: DocumentData) => Promise<any>;
@@ -20,19 +20,19 @@ export default ICollection;
 
 export class Collection implements ICollection {
   private name: string;
-  private collection: DocumentCollection<any>;
+  collection: DocumentCollection<any>;
 
   constructor(name: string) {
     this.name = name;
     this.collection = db.collection(name);
   }
 
+  /**
+   * Get a document from the collection by ID.
+   * @param ref Get an object record based on it's _key.
+   */
   public async id(ref: string) {
-    if (ref[0] === "#") {
-      ref = ref.slice(1);
-    } else if (parseInt(ref)) {
-      return await this.collection.firstExample({ _key: ref });
-    }
+    return this.collection.firstExample({ _key: ref });
   }
 
   public async all() {
@@ -57,7 +57,7 @@ export class Collection implements ICollection {
       entry.name === this.name ? true : false
     );
 
-    if (collections.length > 0) {
+    if (collections.length <= 0) {
       await this.collection.create().catch(async () => {
         await this.collection
           .get()

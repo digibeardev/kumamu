@@ -4,7 +4,7 @@ import { Database } from "arangojs";
 import config from "../config";
 
 class DatabaseClass {
-  private db: Database;
+  db: Database;
   cols: { [key: string]: any };
 
   constructor() {
@@ -29,7 +29,6 @@ class DatabaseClass {
    */
   async init() {
     this.db.useBasicAuth(config.database.user, config.database.password);
-
     const dbs = await this.db.listDatabases();
     // Check to see if the database is created or not.
     if (dbs.indexOf(config.database.name) !== -1) {
@@ -47,11 +46,15 @@ class DatabaseClass {
 
     // Check for collection files.
     const dir = readdirSync(resolve(__dirname, "./lib/"));
-    for (const file of dir.filter(file => !file.match(/.*map$/))) {
+    for (const file of dir.filter(file => !file.match(/.*.map$/))) {
       const name = file.split(".")[0].toLowerCase();
-      this.cols[name] = await import(`./lib/${file}`);
+      const mod = await import(`./lib/${file}`);
+      this.cols[name] = mod.default;
+      await this.cols[name].init();
       console.log(`Collection loaded: ${name}.`);
     }
+
+    return this;
   }
 }
 

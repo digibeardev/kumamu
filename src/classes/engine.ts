@@ -72,13 +72,13 @@ class Engine implements IEngine {
 
   private async loadApi() {
     let dir = readdirSync(resolve(__dirname, "../api/"));
-    for (const file of dir) {
+    for (const file of dir.filter(file => !file.match(/.*.map$/))) {
       const parts: string[] = file.split(".");
       if (!this[parts[0]]) {
         const mod = await import(`../api/${file}`).catch(error =>
           console.log(error)
         );
-        this[parts[0]] = mod.default;
+        this[parts[0]] = await mod.default;
         this.api.set(parts[0], { mod: mod.default, file });
         if (mod.default.start) {
           await this.api.get(parts[0])!.mod.start();
