@@ -203,7 +203,7 @@ export class Flags extends Collection {
     }
   }
 
-  async set(obj: IDbObj, flags: string) {
+  async set(obj: any, flags: string) {
     // First, let's make a Set object to hold our working data.  You can't
     // have repeating values - so it'll filter any repeats for us.
     const flagSet = new Set(obj.flags);
@@ -223,7 +223,7 @@ export class Flags extends Collection {
 
     try {
       obj.flags = [...flagSet];
-      const updated = await mu.db.update(obj._key, {
+      const updated = await mu.db.objs.update(obj._key, {
         flags: obj.flags
       });
       if (updated) {

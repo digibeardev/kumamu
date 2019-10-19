@@ -1,8 +1,8 @@
-import { Collection } from "../../../classes/collection";
 import { DocumentData } from "arangojs/lib/cjs/util/types";
 import { Attribute } from "../../attrs";
 import { Component } from "../../../classes/components";
 import db from "../DatabaseClass";
+import Collection from "../../../classes/collection";
 
 export interface IDbObj extends DocumentData {
   name: string;

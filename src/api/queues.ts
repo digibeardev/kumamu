@@ -1,7 +1,13 @@
 import { Socket } from "net";
+import { TelnetSocket } from "classes/telnet";
+
+interface IPQueue {
+  socket: TelnetSocket;
+  data: any;
+}
 
 export class Queue {
-  pQueue: string[];
+  pQueue: IPQueue[];
   oQueue: string[];
   sockets: Map<string, Socket>;
   constructor() {

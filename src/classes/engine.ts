@@ -3,13 +3,13 @@ import { resolve } from "path";
 import { getModules } from "../utils/utilities";
 import { Socket } from "net";
 import { ICommand } from "../middleware/cmds";
-import attrs, { Attributes } from "api/attrs";
-import flags, { Flags } from "api/flags";
-import msg, { Message } from "api/msg";
+import attrs, { Attributes } from "../api/attrs";
+import flags, { Flags } from "../api/flags";
+import msg, { Message } from "../api/msg";
 import db, { DatabaseClass } from "api/db/DatabaseClass";
-import parser, { Parser } from "api/parser";
-import queues, { Queue } from "api/queues";
-import txt, { TextFiles } from "api/txt";
+import parser, { Parser } from "../api/parser";
+import queues, { Queue } from "../api/queues";
+import txt, { TextFiles } from "../api/txt";
 const moment = require("moment");
 
 export interface IEngine {

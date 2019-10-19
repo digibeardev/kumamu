@@ -21,7 +21,7 @@ export class TextFiles {
     });
   }
 
-  get(name: string) {
+  get(name: string = "") {
     return this.txt.get(name.toLowerCase());
   }
 

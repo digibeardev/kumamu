@@ -26,7 +26,7 @@ export class Parser {
   private parser: any;
   private functions: Map<
     string,
-    (en: IDbObj, args: Expr[], scope: Scope) => Promise<string>
+    (en: string, args: Expr[], scope: Scope) => Promise<string>
   >;
 
   constructor() {
@@ -76,7 +76,7 @@ export class Parser {
    */
   public setFunction(
     name: string,
-    func: (en: IDbObj, args: Expr[], scope: Scope) => any
+    func: (en: string, args: Expr[], scope: Scope) => any
   ) {
     if (func.length === 3) {
       this.functions.set(name.toLowerCase(), func);
@@ -99,7 +99,7 @@ export class Parser {
    * @param scope The scope of the expression where functions and
    * special forms are stored.
    */
-  public async evaluate(en: IDbObj, expr: Expr, scope: Scope) {
+  public async evaluate(en: string, expr: Expr, scope: Scope) {
     if (expr.type === "word") {
       if (scope[expr.value]) {
         return scope[expr.value];
@@ -135,7 +135,7 @@ export class Parser {
     return string.replace(/%[cCxX]./g, "");
   }
 
-  public async run(en: IDbObj, string: string, scope: Scope) {
+  public async run(en: string, string: string, scope: Scope) {
     string = string.replace(/%[(]/g, "\u250D").replace(/%[)]/g, "\u2511");
     return await this.evaluate(en, this.parse(string), scope).catch(error =>
       console.log(error)

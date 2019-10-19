@@ -4,19 +4,16 @@ import {
   DocumentCollection
 } from "arangojs/lib/cjs/collection";
 import { DocumentData } from "arangojs/lib/cjs/util/types";
-import { IDbObj } from "../api/db/lib/objs";
 
 export interface ICollection {
   init: () => Promise<void>;
-  id: (ref: string) => Promise<IDbObj> | Promise<void>;
-  delete: (key: DocumentData, record: DocumentData) => Promise<any>;
-  save: (key: DocumentData, record: DocumentData) => Promise<any>;
-  update: (key: DocumentData, update: DocumentData) => Promise<any>;
+  id: (ref: string) => Promise<any> | Promise<void>;
+  delete: (key: string, record: DocumentData) => Promise<any>;
+  save: (record: DocumentData) => Promise<any>;
+  update: (key: string, update: DocumentData) => Promise<any>;
   onLoad: () => void;
-  all: () => Promise<IDbObj[]>;
+  all: () => Promise<any[]>;
 }
-
-export default ICollection;
 
 export class Collection implements ICollection {
   private name: string;
@@ -89,7 +86,7 @@ export class Collection implements ICollection {
    * @param key The record to update
    * @param update The object literal update to make to the record.
    */
-  async update(key: DocumentData, update: DocumentData) {
+  async update(key: string, update: DocumentData) {
     return this.collection.update(key, update);
   }
 
@@ -97,7 +94,9 @@ export class Collection implements ICollection {
    * Remove a document from the collection.
    * @param key The key of the document to remove.
    */
-  async delete(key: DocumentData) {
+  async delete(key: string) {
     return this.collection.remove(key);
   }
 }
+
+export default Collection;

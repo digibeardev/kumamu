@@ -13,7 +13,7 @@ const startup = () => {
   // Registration reminding timer.
   setInterval(async () => {
     mu.queues.sockets.forEach(async (v: any) => {
-      if (mu.flags.hasFlags(await mu.db.key(v._key), "!registered")) {
+      if (mu.flags.hasFlags(await mu.db.objs.id(v._key), "!registered")) {
         mu.broadcast.send(
           v,
           "Your character isn't registered. " +

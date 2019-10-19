@@ -1,5 +1,6 @@
 import { Socket } from "net";
 import parser from "../api/parser";
+import { TelnetSocket } from "classes/telnet";
 
 export class Message {
   /**
@@ -9,12 +10,13 @@ export class Message {
    * @param options Any options passed along with with the
    * send statement.
    */
-  send(socket: Socket, message: string, options?: object) {
+  send(socket: TelnetSocket, message: string, options?: object) {
     socket.write(
       parser
         .subs(message)
         .replace("\u250D", "(")
-        .replace("\u2511", ")") + "\r\n"
+        .replace("\u2511", ")") + "\r\n",
+      "utf-8"
     );
   }
 }
