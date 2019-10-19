@@ -1,15 +1,14 @@
-import { readdirSync } from "fs";
-import { resolve } from "path";
 import { Database } from "arangojs";
 import config from "../config";
+import objs, { ObjectsClass } from "./lib/objs";
 
-class DatabaseClass {
+export class DatabaseClass {
   db: Database;
-  cols: { [key: string]: any };
+  objs: ObjectsClass;
 
   constructor() {
     this.db = new Database();
-    this.cols = {};
+    this.objs = objs;
   }
 
   public async query(aql: string) {
@@ -42,16 +41,6 @@ class DatabaseClass {
         .createDatabase(config.database.name)
         .catch(error => console.error(error));
       console.log(`Database ${config.database.name} selected.`);
-    }
-
-    // Check for collection files.
-    const dir = readdirSync(resolve(__dirname, "./lib/"));
-    for (const file of dir.filter(file => !file.match(/.*.map$/))) {
-      const name = file.split(".")[0].toLowerCase();
-      const mod = await import(`./lib/${file}`);
-      this.cols[name] = mod.default;
-      await this.cols[name].init();
-      console.log(`Collection loaded: ${name}.`);
     }
 
     return this;

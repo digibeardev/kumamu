@@ -6,10 +6,6 @@ export interface Attribute {
   value: string;
 }
 
-class Attributes {
-  public async set(attr: Attribute) {
-    let target = await db.cols.obj;
-  }
-}
+export class Attributes {}
 
 export default new Attributes();

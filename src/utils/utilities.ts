@@ -40,7 +40,15 @@ export const getFiles = async (
 /**
  * Load modules given a path.
  * @param path The path to the modules to load.
+ * @param fn A function executed on each file found in the directory.
+ * It accepts up to three parameters: name, path and mod.  Mod is the
+ * actual object returned from the `import()`.
+ * @example
+ * getModules('../api/', name =>
+ *  console.log(`${name} module installed.`)
+ * )
  */
+
 export const getModules = async (
   path: string,
   fn?: (name: string, path: string, mod: any) => void

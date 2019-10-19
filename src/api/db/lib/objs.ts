@@ -15,20 +15,22 @@ export interface IDbObj extends DocumentData {
   created: Number;
   modified: Number;
   last?: Number;
-  flags?: string[];
-  contents?: string[];
-  channels?: string[];
+  flags: string[];
+  contents: string[];
+  channels: string[];
   exits?: string[];
-  locks?: string[];
+  locks: string[];
   location?: string[];
   to?: string[];
   from?: string[];
 }
 
-class Objects extends Collection {
+export class ObjectsClass extends Collection {
   constructor(name: string) {
     super(name);
   }
+
+  public key(key: string) {}
 
   /**
    * Add a new object to the database.
@@ -58,4 +60,4 @@ class Objects extends Collection {
   }
 }
 
-export default new Objects("obj");
+export default new ObjectsClass("obj");

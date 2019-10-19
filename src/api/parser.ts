@@ -21,6 +21,7 @@ export interface Expr {
   args?: Expr[];
 }
 export class Parser {
+  sub: Map<RegExp, string>;
   private peg: any;
   private parser: any;
   private functions: Map<
@@ -34,6 +35,7 @@ export class Parser {
     });
     this.parser = peg.generate(this.peg);
     this.functions = new Map();
+    this.sub = new Map();
     this.init();
   }
 
@@ -44,6 +46,10 @@ export class Parser {
       );
       await mod.default();
     });
+
+    // import substitutions.
+    const mod = await import("../utils/subs");
+    mod.default();
   }
 
   /**
@@ -77,6 +83,13 @@ export class Parser {
     } else {
       throw new Error("setFunction accepts functions with 3 args.");
     }
+  }
+
+  public subs(text: string) {
+    for (let [k, v] of this.sub.entries()) {
+      text = text.replace(k, v);
+    }
+    return text;
   }
 
   /**

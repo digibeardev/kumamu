@@ -1,16 +1,30 @@
 import { readdirSync } from "fs";
 import { resolve } from "path";
-import { getFiles, getModules } from "../utils/utilities";
+import { getModules } from "../utils/utilities";
 import { Socket } from "net";
-import { ICommand } from "middleware/cmds";
+import { ICommand } from "../middleware/cmds";
+import attrs, { Attributes } from "api/attrs";
+import flags, { Flags } from "api/flags";
+import msg, { Message } from "api/msg";
+import db, { DatabaseClass } from "api/db/DatabaseClass";
+import parser, { Parser } from "api/parser";
+import queues, { Queue } from "api/queues";
+import txt, { TextFiles } from "api/txt";
 const moment = require("moment");
 
 export interface IEngine {
+  db: DatabaseClass;
+  attrs: Attributes;
+  config: any;
+  flags: Flags;
+  msg: Message;
+  parser: Parser;
+  queues: Queue;
+  txt: TextFiles;
   use: (func: FuncUseType) => Promise<void>;
   exe: (socket: any, command: string, args: string[]) => Promise<string>;
   start: () => Promise<void>;
   handle: (socket: Socket, data: any, scope: object) => Promise<void>;
-  [key: string]: any;
 }
 
 export interface APIModule {
@@ -26,7 +40,6 @@ export interface apiEntry {
 export interface IDataWrapper {
   input: any;
   socket: any;
-  scope: object;
   game: any;
   ran: Boolean;
 }
@@ -35,13 +48,28 @@ type FuncUseType = (data: any, next: any) => Promise<FuncNextType>;
 export type FuncNextType = (error: Error | null, data?: any) => Promise<void>;
 
 class Engine implements IEngine {
+  db: DatabaseClass;
+  attrs: Attributes;
+  config: any;
+  flags: Flags;
+  msg: Message;
+  parser: Parser;
+  queues: Queue;
+  txt: TextFiles;
   private stack: FuncUseType[];
   private api: Map<string, { mod: any; file: string }>;
-  private plugins: Map<string, any>;
-  private cmds: Map<string, ICommand[]>;
+  plugins: Map<string, any>;
+  cmds: Map<string, ICommand>;
   [key: string]: any;
 
   constructor() {
+    this.db = db;
+    this.attrs = attrs;
+    this.flags = flags;
+    this.msg = msg;
+    this.parser = parser;
+    this.queues = queues;
+    this.txt = txt;
     this.stack = [];
     this.api = new Map();
     this.cmds = new Map();
@@ -49,9 +77,6 @@ class Engine implements IEngine {
   }
 
   public async start() {
-    console.log("Loading API.");
-    await this.loadApi();
-    console.log("API Loaded.");
     console.log("Loading Plugins.");
     await this.loadPlugins();
     console.log("Plugins Loaded.");
@@ -66,13 +91,6 @@ class Engine implements IEngine {
 
   public async use(func: FuncUseType) {
     this.stack.push(func);
-  }
-
-  private async loadApi() {
-    await getModules("../api/", (file, _, mod) => {
-      const parts = file.split(".");
-      this[parts[0]] = mod.default;
-    });
   }
 
   private async loadPlugin(folder: string) {
@@ -106,12 +124,11 @@ class Engine implements IEngine {
     return "Not implemented yet!";
   }
 
-  public async handle(socket: any, data: any, scope: object) {
+  public async handle(socket: any, data: any) {
     let idx = 0;
     const dataWrapper: IDataWrapper = {
       input: data,
       socket,
-      scope,
       game: this,
       ran: false
     };

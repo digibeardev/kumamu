@@ -1,13 +1,13 @@
 import { TelnetServer, TelnetSocket } from "../classes/telnet";
-
+import mu from "../classes/engine";
 const startup = () => {
   const server = new TelnetServer(socket => {
     const tSocket = new TelnetSocket(socket);
 
-    tSocket.write("Welcome to the server!\r\n", "utf-8");
+    mu.msg.send(tSocket, mu.txt.get("connect"));
 
     tSocket.on("data", (data: Buffer) => {
-      tSocket.write(data.toString() + "\r\n", "utf-8");
+      mu.queues.pQueue.push({ socket: tSocket, data: data.toString("utf-8") });
     });
   }).netServer;
 

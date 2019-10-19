@@ -12,7 +12,7 @@ export interface ICollection {
   delete: (key: DocumentData, record: DocumentData) => Promise<any>;
   save: (key: DocumentData, record: DocumentData) => Promise<any>;
   update: (key: DocumentData, update: DocumentData) => Promise<any>;
-  onLoad: () => Promise<void>;
+  onLoad: () => void;
   all: () => Promise<IDbObj[]>;
 }
 

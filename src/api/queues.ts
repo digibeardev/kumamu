@@ -1,6 +1,6 @@
 import { Socket } from "net";
 
-class Queue {
+export class Queue {
   pQueue: string[];
   oQueue: string[];
   sockets: Map<string, Socket>;

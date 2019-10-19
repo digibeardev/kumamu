@@ -5,4 +5,5 @@ import app from "./classes/engine";
   console.log(
     await app.parser.evaluate("2", app.parser.parse("[add(1,2)]"), {})
   );
+  console.log(app.txt.get("connect"));
 })();

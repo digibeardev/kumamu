@@ -37,6 +37,10 @@ export enum TelnetSeq {
   EOR = 239
 }
 
+export interface ItSocket extends Socket {
+  _key: string;
+}
+
 export enum TelnetOpts {
   OPT_ECHO = 1,
   OPT_EOR = 25,
