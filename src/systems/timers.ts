@@ -1,20 +1,24 @@
 import mu from "../classes/engine";
+import queues from "../api/queues";
+import flags from "../api/flags";
+import dbObjs from "../api/db/collections/objs";
+import msg from "../api/msg";
 
 const startup = () => {
   // Tick
   setInterval(() => {
-    if (mu.queues.pQueue.length > 0) {
-      const { socket, data } = mu.queues.pQueue[0];
+    if (queues.pQueue.length > 0) {
+      const { socket, data } = queues.pQueue[0];
       mu.handle(socket, data);
-      mu.queues.pQueue.shift();
+      queues.pQueue.shift();
     }
   }, 15);
 
   // Registration reminding timer.
   setInterval(async () => {
-    mu.queues.sockets.forEach(async (v: any) => {
-      if (mu.flags.hasFlags(await mu.db.objs.id(v._key), "!registered")) {
-        mu.broadcast.send(
+    queues.sockets.forEach(async (v: any) => {
+      if (flags.hasFlags(await dbObjs.id(v._key), "!registered")) {
+        msg.send(
           v,
           "Your character isn't registered. " +
             "Please take a moment to register!%rSee '%ch+help @account%cn'" +

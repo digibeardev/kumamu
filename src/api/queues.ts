@@ -1,5 +1,5 @@
 import { Socket } from "net";
-import { TelnetSocket } from "classes/telnet";
+import { TelnetSocket } from "../classes/telnet";
 
 interface IPQueue {
   socket: TelnetSocket;

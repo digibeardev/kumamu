@@ -1,6 +1,5 @@
 import { Collection } from "../classes/collection";
-import { IDbObj } from "./db/lib/objs";
-import mu from "../classes/engine";
+import dbObjs, { IDbObj } from "./db/collections/objs";
 import db from "../classes/engine";
 import * as fs from "fs";
 import { flags } from "../classes/defaults";
@@ -160,7 +159,7 @@ export class Flags extends Collection {
    * @return {boolean} A truthy or falsey response is given
    * depending on if the conditions are met or not.
    */
-  hasFlags(obj: IDbObj, flags: string = " ") {
+  hasFlags(obj: IDbObj, flags: string = " "): boolean {
     // We need to iterate through the flag collection
     // without hitting the call stack limit.  Right now
     // has flags is a couple layers deep in recursion.
@@ -223,7 +222,7 @@ export class Flags extends Collection {
 
     try {
       obj.flags = [...flagSet];
-      const updated = await mu.db.objs.update(obj._key, {
+      const updated = await dbObjs.update(obj._key, {
         flags: obj.flags
       });
       if (updated) {
@@ -241,7 +240,7 @@ export class Flags extends Collection {
    * @param {DBO} enactor
    * @param {string} flags
    */
-  orFlags(enactor: IDbObj, flags = "") {
+  orFlags(enactor: IDbObj, flags: string = "") {
     let ret = false;
     const flagsArray = flags.toLowerCase().split(" ");
 

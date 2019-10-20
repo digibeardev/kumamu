@@ -1,14 +1,11 @@
 import { Database } from "arangojs";
 import config from "../config";
-import objs, { ObjectsClass } from "./lib/objs";
 
 export class DatabaseClass {
-  db: Database;
-  objs: ObjectsClass;
+  private db: Database;
 
   constructor() {
     this.db = new Database();
-    this.objs = objs;
   }
 
   public async query(aql: string) {

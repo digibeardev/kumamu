@@ -1,6 +1,6 @@
-import { IDataWrapper, FuncNextType } from "classes/engine";
+import mu, { IDataWrapper, FuncNextType } from "../classes/engine";
 import { Socket } from "net";
-import mu from "../classes/engine";
+import flagsApi from "../api/flags";
 
 export interface ICommand {
   pattern: RegExp | string;
@@ -17,7 +17,7 @@ const cmds = async (dataWrapper: IDataWrapper, next: FuncNextType) => {
     const { pattern, run, flags } = command;
     const match = input.match(pattern);
 
-    const obj = await mu.flags.hasFlags(
+    const obj = await flagsApi.hasFlags(
       await mu.db.objs.id(socket._key),
       flags
     );

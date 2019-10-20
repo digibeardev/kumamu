@@ -1,6 +1,5 @@
-import { Socket } from "net";
 import parser from "../api/parser";
-import { TelnetSocket } from "classes/telnet";
+import { TelnetSocket } from "../classes/telnet";
 
 export class Message {
   /**

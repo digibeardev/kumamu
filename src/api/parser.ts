@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { IDbObj } from "./db/lib/objs";
 import { getFiles } from "../utils/utilities";
+import subs from "../utils/subs";
 
 const peg = require("pegjs");
 
@@ -46,10 +46,6 @@ export class Parser {
       );
       await mod.default();
     });
-
-    // import substitutions.
-    const mod = await import("../utils/subs");
-    mod.default();
   }
 
   /**

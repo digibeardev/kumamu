@@ -11,12 +11,12 @@
     ]
   },
   "scripts": {
-    "clean": "rimraj ./src/dist/**",
+    "clean": "rimraf ./src/dist/**",
     "build": "tsc -p ./src",
-    "compile": "concurrently \"npm run clean\"  \"cpx ./src/*.pegjs ./src/dist/\" \"npm run build\" ",
+    "compile": "concurrently \"npm run clean\"  \"npm run copy\" \"npm run build\" ",
     "dev": "tsc -p ./src  -w",
     "start": "nodemon --watch src/ --exec \"npm run compile\"  --verbose -e ts",
-    "copy": "cpx ./src/*.pegjs ./src/dist/"
+    "copy": "cpx ./src/**/*.pegjs ./src/dist/"
   },
   "keywords": [
     "MUSH",

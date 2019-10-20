@@ -3,24 +3,9 @@ import { resolve } from "path";
 import { getModules } from "../utils/utilities";
 import { Socket } from "net";
 import { ICommand } from "../middleware/cmds";
-import attrs, { Attributes } from "../api/attrs";
-import flags, { Flags } from "../api/flags";
-import msg, { Message } from "../api/msg";
-import db, { DatabaseClass } from "api/db/DatabaseClass";
-import parser, { Parser } from "../api/parser";
-import queues, { Queue } from "../api/queues";
-import txt, { TextFiles } from "../api/txt";
 const moment = require("moment");
 
 export interface IEngine {
-  db: DatabaseClass;
-  attrs: Attributes;
-  config: any;
-  flags: Flags;
-  msg: Message;
-  parser: Parser;
-  queues: Queue;
-  txt: TextFiles;
   use: (func: FuncUseType) => Promise<void>;
   exe: (socket: any, command: string, args: string[]) => Promise<string>;
   start: () => Promise<void>;
@@ -48,14 +33,6 @@ type FuncUseType = (data: any, next: any) => Promise<FuncNextType>;
 export type FuncNextType = (error: Error | null, data?: any) => Promise<void>;
 
 class Engine implements IEngine {
-  db: DatabaseClass;
-  attrs: Attributes;
-  config: any;
-  flags: Flags;
-  msg: Message;
-  parser: Parser;
-  queues: Queue;
-  txt: TextFiles;
   private stack: FuncUseType[];
   private api: Map<string, { mod: any; file: string }>;
   plugins: Map<string, any>;
@@ -63,13 +40,6 @@ class Engine implements IEngine {
   [key: string]: any;
 
   constructor() {
-    this.db = db;
-    this.attrs = attrs;
-    this.flags = flags;
-    this.msg = msg;
-    this.parser = parser;
-    this.queues = queues;
-    this.txt = txt;
     this.stack = [];
     this.api = new Map();
     this.cmds = new Map();
