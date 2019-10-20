@@ -3,6 +3,7 @@ import { resolve } from "path";
 import { getModules } from "../utils/utilities";
 import { Socket } from "net";
 import { ICommand } from "../middleware/cmds";
+import config from "../api/config";
 const moment = require("moment");
 
 export interface IEngine {
@@ -53,6 +54,7 @@ class Engine implements IEngine {
     console.log("Loading Systems.");
     await this.loadSystems();
     console.log("Systems Loaded.");
+    console.log("Game running on port:", config.game.port || 4000);
   }
 
   private async loadSystems() {
@@ -64,12 +66,12 @@ class Engine implements IEngine {
   }
 
   private async loadPlugin(folder: string) {
-    const config = await import(`../../../plugins/${folder}/package.json`);
+    const config = await import(`../plugins/${folder}/package.json`);
     if (config) {
       const file = config.main ? config.main : "index.js";
       const parts = folder.split("/");
-      const plugin = await import(`../../../plugins/${folder}/${file}`).catch(
-        error => console.log(error)
+      const plugin = await import(`../plugins/${folder}/${file}`).catch(error =>
+        console.log(error)
       );
       this.plugins.set(parts.pop()!, plugin);
       console.log(`Plugin loaded: ${folder} (v${config.version}).`);
@@ -84,7 +86,7 @@ class Engine implements IEngine {
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
 
-    const plugins = getDirectories(resolve(__dirname, "../../plugins"));
+    const plugins = getDirectories(resolve(__dirname, "../plugins"));
     for (const plugin of plugins) {
       this.loadPlugin(plugin).catch(error => console.log(error));
     }

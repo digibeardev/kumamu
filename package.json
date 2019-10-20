@@ -11,12 +11,7 @@
     ]
   },
   "scripts": {
-    "clean": "rimraf ./src/dist/**",
-    "build": "tsc -p ./src",
-    "compile": "concurrently \"npm run clean\"  \"npm run copy\" \"npm run build\" ",
-    "dev": "tsc -p ./src  -w",
-    "start": "nodemon --watch src/ --exec \"npm run compile\"  --verbose -e ts",
-    "copy": "cpx ./src/**/*.pegjs ./src/dist/"
+    "run": "ts-node index.ts"
   },
   "keywords": [
     "MUSH",

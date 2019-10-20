@@ -11,7 +11,7 @@ export class TextFiles {
   }
 
   private async init() {
-    await getFiles("../../text/", (path, file) => {
+    await getFiles("../text/", (path, file) => {
       const contents = readFileSync(
         resolve(__dirname, path, file.name),
         "utf-8"

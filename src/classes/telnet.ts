@@ -23,7 +23,7 @@
  */
 
 import { EventEmitter } from "events";
-import net, { Socket, Server } from "net";
+import * as net from "net";
 
 export enum TelnetSeq {
   IAC = 255,
@@ -37,7 +37,7 @@ export enum TelnetSeq {
   EOR = 239
 }
 
-export interface ItSocket extends Socket {
+export interface ItSocket extends net.Socket {
   _key: string;
 }
 
@@ -48,12 +48,12 @@ export enum TelnetOpts {
 }
 
 export class TelnetSocket extends EventEmitter {
-  private socket: Socket | any;
+  private socket: net.Socket | any;
   private echoing: Boolean;
   private gaMode: any;
   maxInputLength: number;
 
-  constructor(socket: Socket, opts: object | any = {}) {
+  constructor(socket: net.Socket, opts: object | any = {}) {
     super();
     this.attach(socket);
     this.echoing = true;
@@ -79,7 +79,8 @@ export class TelnetSocket extends EventEmitter {
     }
 
     let iacs = 0;
-    for (const val of data.values()) {
+    const dataValues = Array.from(data.values());
+    for (const val of dataValues) {
       if (val === TelnetSeq.IAC) {
         iacs++;
       }
@@ -157,7 +158,7 @@ export class TelnetSocket extends EventEmitter {
     );
   }
 
-  private attach(connection: Socket | any) {
+  private attach(connection: net.Socket | any) {
     this.socket = connection;
     let inputbuf = new Buffer(1024);
     let inputlen = 0;
@@ -346,14 +347,14 @@ export class TelnetSocket extends EventEmitter {
 }
 
 export class TelnetServer {
-  netServer: Server;
+  netServer: net.Server;
 
   /**
    * @param {object}   streamOpts options for the stream
    * @param {function} listener   connected callback
    */
-  constructor(listener: (socket: Socket) => void) {
-    this.netServer = net.createServer({}, (socket: Socket | any) => {
+  constructor(listener: (socket: net.Socket) => void) {
+    this.netServer = net.createServer({}, (socket: net.Socket | any) => {
       socket.fresh = true;
       listener(socket);
     });

@@ -86,7 +86,8 @@ export class Parser {
   }
 
   public subs(text: string) {
-    for (let [k, v] of this.sub.entries()) {
+    const entries = Array.from(this.sub.entries());
+    for (let [k, v] of entries) {
       text = text.replace(k, v);
     }
     return text;

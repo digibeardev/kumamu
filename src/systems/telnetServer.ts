@@ -2,6 +2,7 @@ import { TelnetServer, TelnetSocket } from "../classes/telnet";
 import msg from "../api/msg";
 import queues from "../api/queues";
 import txt from "../api/txt";
+import config from "../api/config";
 
 const startup = () => {
   const server = new TelnetServer(socket => {
@@ -14,7 +15,7 @@ const startup = () => {
     });
   }).netServer;
 
-  server.listen(4000);
+  server.listen(config.game.port || 4000);
 };
 
 export default startup;
