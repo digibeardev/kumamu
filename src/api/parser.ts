@@ -46,6 +46,10 @@ export class Parser {
       );
       await mod.default();
     });
+
+    // import substitutions.
+    const mod = await import("../utils/subs");
+    mod.default();
   }
 
   /**
