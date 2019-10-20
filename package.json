@@ -11,7 +11,7 @@
     ]
   },
   "scripts": {
-    "run": "ts-node index.ts"
+    "start": "ts-node index.ts"
   },
   "keywords": [
     "MUSH",
@@ -19,10 +19,11 @@
     "MUD",
     "TELNET",
     "ECS",
-    "WEBSOCKETS"
+    "WEBSOCKETS",
+    "TYPESCRIPT"
   ],
   "author": "Lemuel Canady",
-  "license": "",
+  "license": "AGPL-3.0",
   "dependencies": {
     "arangojs": "^6.11.1",
     "lodash": "^4.17.15",
