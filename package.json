@@ -1,7 +1,7 @@
 {
   "name": "kumamu",
   "version": "0.1.0",
-  "description": "",
+  "description": "A MUSH-like server written with Typescript.",
   "main": "./src/index.js",
   "nodemonConfig": {
     "ignore": [
@@ -28,8 +28,8 @@
     "arangojs": "^6.11.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
-    "momentjs": "^2.0.0",
     "pegjs": "^0.10.0",
+    "sha256": "^0.2.0",
     "telnet-stream": "^1.0.4",
     "toml": "^3.0.0",
     "ts-pegjs": "^0.2.6"

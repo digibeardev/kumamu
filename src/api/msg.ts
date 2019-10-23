@@ -1,5 +1,5 @@
 import parser from "../api/parser";
-import { TelnetSocket } from "../classes/telnet";
+import { TelnetSocket, ItSocket } from "../classes/telnet";
 
 export class Message {
   /**
@@ -9,7 +9,7 @@ export class Message {
    * @param options Any options passed along with with the
    * send statement.
    */
-  send(socket: TelnetSocket, message: string, options?: object) {
+  send(socket: any, message: string, options?: object) {
     socket.write(
       parser
         .subs(message)

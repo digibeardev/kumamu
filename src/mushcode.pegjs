@@ -4,28 +4,39 @@
 // Builds an AST to be processed by the game server.
 
 expression =  f:function  {return f} / 
-			        "["_ f: function _ "]" {return f}
+			 "["_ f: function _ "]"    {return f}
  
 function =  _ call: word "(" _ a: (args)? _ ")" _  
 { 
-	return {
-    type: "function", 
-    operator: {type: "word", value:call}, 
-    args: Array.isArray(a) ? a : [a]
-  }
+	const loc = location()
+    return {
+    	type: "function", 
+        operator: {type: "word", value:call},
+        location: loc,
+        args: Array.isArray(a) ? a : [a]
+   	}
 }
-args  =  a:(arg arg)+ _ t:args* 
-{return [{type: "list", value: a.flat()},...t].flat()}/ 
-        
-        a: arg* _ "," b:(blank)* "," _ t: (args)* 
-{ return 	[[a,{type: "word", value: null}].flat(),t.flat()].flat() }/
-        
-        a: arg* _ "," _ t: (args)* {return [a.flat(),t.flat()].flat()}/ 
-		    arg 
-        
-arg   =  e: expression {return e}/ w: word { return {type: "word", value: w} }
+args = 	a:(arg arg)+ _ t:args* {return [{type: "list", value: a.flat()},...t].flat()}/ 
 
-blank =  b: [ ] 
-word  =  w: [^\(\),\[\]]+ {return w.join("").trim()} 
-_     =  [ \t\n\r]*
+		a: arg* _ "," _ "," _ t: (args)* 
+{ 
+	const loc = location();
+	return 	[[a,{type: "word", value: null, location: loc}].flat(),t.flat()].flat() 
+
+}/
+    
+    	a: arg* _ "," _ t: (args)* {return [a.flat(),t.flat()].flat()}  / 
+		arg 
+
+
+
+arg = e: expression {return e}/ w: word { 
+     	const loc = location();
+     	return {type: "word", value: w,   location: loc } 
+     
+     }
+
+
+word = w:[^\(\),\[\]]+ {return w.join("").trim()} 
+_ = [ \t\n\r]*
 

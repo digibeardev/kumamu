@@ -4,6 +4,7 @@ import {
   DocumentCollection
 } from "arangojs/lib/cjs/collection";
 import { DocumentData } from "arangojs/lib/cjs/util/types";
+import { IDbObj } from "src/api/db/collections/objs";
 
 export interface ICollection {
   init: () => Promise<void>;
@@ -12,11 +13,11 @@ export interface ICollection {
   save: (record: DocumentData) => Promise<any>;
   update: (key: string, update: DocumentData) => Promise<any>;
   onLoad: () => void;
-  all: () => Promise<any[]>;
+  all: () => Promise<IDbObj[] | void>;
 }
 
 export class Collection implements ICollection {
-  private name: string;
+  name: string;
   collection: DocumentCollection<any>;
 
   constructor(name: string) {
@@ -34,7 +35,7 @@ export class Collection implements ICollection {
 
   public async all() {
     let collCursor = await db.query(`
-    FOR obj of ${this.name}
+    FOR obj IN ${this.name}
     RETURN obj
     `);
     return await collCursor.all();
@@ -63,15 +64,17 @@ export class Collection implements ICollection {
           this.onLoad();
         }
       });
+    } else {
+      if (typeof this.onLoad === "function") {
+        await this.onLoad();
+      }
     }
   }
 
   /**
    * Run aditional functionality on class instantiation.
    */
-  async onLoad() {
-    throw new Error("Method not implemented.");
-  }
+  async onLoad() {}
 
   /**
    * Save a document in the collection

@@ -1,6 +1,6 @@
 import mu from "../classes/engine";
 import queues from "../api/queues";
-import flags from "../api/flags";
+import flags from "../api/db/collections/flags";
 import dbObjs from "../api/db/collections/objs";
 import msg from "../api/msg";
 

@@ -8,9 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "preLaunchTask": "npm: build",
-      "program": "${workspaceFolder}\\src\\index.ts",
-      "outFiles": ["${workspaceFolder}/src/dist/**/*.js"]
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["${workspaceFolder}/index.ts"]
     }
   ]
 }

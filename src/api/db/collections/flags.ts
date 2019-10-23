@@ -1,8 +1,8 @@
-import { Collection } from "../classes/collection";
-import dbObjs, { IDbObj } from "./db/collections/objs";
-import db from "../classes/engine";
+import { Collection } from "../../../classes/collection";
+import dbObjs, { IDbObj } from "./objs";
+import db from "../../db/DatabaseClass";
 import * as fs from "fs";
-import { flags } from "../classes/defaults";
+import { flags } from "../../../classes/defaults";
 
 export interface IFlag {
   name: string;
@@ -26,10 +26,9 @@ export class Flags extends Collection {
   async onLoad() {
     (async () => {
       try {
-        let countCursor = await db.query(`RETURN LENGTH(flags)`);
-        let count = await countCursor.next();
+        let count = await this.all();
 
-        if (count) {
+        if (count.length > 0) {
           console.log("Game flags loaded.");
 
           // Load extra flags defined in the json file
@@ -41,13 +40,6 @@ export class Flags extends Collection {
         } else {
           console.log("No Flags database found.  Creating new instance.");
           this.dbCheck(this.flagList);
-
-          const extras = JSON.parse(
-            fs.readFileSync("../data/flags.json", "uft-8")
-          );
-          if (extras) {
-            this.dbCheck(extras);
-          }
         }
       } catch (error) {
         console.log(error);
@@ -65,10 +57,10 @@ export class Flags extends Collection {
     });
   }
 
-  async dbCheck(flags: IFlag[]) {
+  async dbCheck(flgs: IFlag[]) {
     try {
       // Lop through the list of flag objects
-      for (const flag of flags) {
+      for (const flag of flgs) {
         let flagCursor = await db.query(`
           FOR flag IN flags
             FILTER flag.name == "${flag.name.toLowerCase()}"
@@ -177,13 +169,13 @@ export class Flags extends Collection {
         flag = flag.slice(1);
         // If the flag is in the object's array,
         // fail.
-        if (obj.flags.indexOf(flag) === -1) {
+        if (obj.flags!.indexOf(flag) === -1) {
           results.push(true);
         } else {
           results.push(false);
         }
         // A normal search, Found it!
-      } else if (obj.flags.indexOf(flag) !== -1) {
+      } else if (obj.flags!.indexOf(flag) !== -1) {
         results.push(true);
         // ... Or not.
       } else if (/^.+\|.+/g.exec(flag)) {
@@ -286,7 +278,7 @@ export class Flags extends Collection {
 
   async flagLvl(target: IDbObj) {
     let lvl = 0;
-    for (const flag of target.flags) {
+    for (const flag of target.flags!) {
       try {
         let flagCursor = await this.get(flag);
         let flg = await flagCursor.next();
@@ -303,8 +295,8 @@ export class Flags extends Collection {
   async flagCodes(target: IDbObj) {
     try {
       if (target) {
-        let output = `%(#${target._key}${target.type[0].toUpperCase()}`;
-        for (const flag of target.flags) {
+        let output = `%(#${target._key}${target.type![0].toUpperCase()}`;
+        for (const flag of target.flags!) {
           try {
             const flgCursor = await this.get(flag);
 
