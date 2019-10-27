@@ -1,22 +1,37 @@
-import { Database } from "arangojs";
-import config from "../config";
+const { Database, DocumentCollection } = require("arangojs");
+const { getFiles } = require("../../utils/utilities");
 
-export class DatabaseClass {
-  private db: Database;
-
+/**
+ * new DatabaseClass()
+ */
+class DatabaseClass {
   constructor() {
     this.db = new Database();
+    this.colls = new Map();
+    this.init();
   }
 
-  public async query(aql: string) {
-    return await this.db.query(aql);
+  /**
+   * Perform a raw database query using Arango's AQL language.
+   * @param {string} aql The AQL query to perform
+   */
+  query(aql) {
+    return this.db.query(aql);
   }
 
-  public collection(name: string) {
+  /** @type {(name: string) => DocumentCollection } */
+  /**
+   *
+   * @param { string } name The name of the colleciton to retrieve.
+   */
+  collection(name) {
     return this.db.collection(name);
   }
 
-  public listCollections() {
+  /**
+   * Wrapper for Arango listCollections.
+   */
+  listCollections() {
     return this.db.listCollections();
   }
 
@@ -26,9 +41,11 @@ export class DatabaseClass {
   async init() {
     this.db.useBasicAuth(config.database.user, config.database.password);
     const dbs = await this.db.listDatabases();
+
     // Check to see if the database is created or not.
     if (dbs.indexOf(config.database.name) !== -1) {
       this.db.useDatabase(config.database.name);
+
       // Created, use the database
       await this.db.get().catch(error => console.error(error));
       console.log(`Database ${config.database.name} initialized.`);
@@ -40,8 +57,14 @@ export class DatabaseClass {
       console.log(`Database ${config.database.name} selected.`);
     }
 
+    // Load collections.
+    getFiles("./collections/", dirent => {
+      this.colls.set(name, require("./collections/" + dirent.name));
+      console.log(`Collection '${dirent.name.split(".")[0]}' loaded.`);
+    });
+
     return this;
   }
 }
 
-export default new DatabaseClass();
+module.exports = new DatabaseClass();

@@ -11,7 +11,7 @@
     ]
   },
   "scripts": {
-    "start": "npx ts-node index.ts"
+    "start": "node index"
   },
   "keywords": [
     "MUSH",
@@ -19,26 +19,19 @@
     "MUD",
     "TELNET",
     "ECS",
-    "WEBSOCKETS",
-    "TYPESCRIPT"
+    "WEBSOCKETS"
   ],
   "author": "Lemuel Canady",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@hapi/joi": "^16.1.7",
     "arangojs": "^6.11.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "pegjs": "^0.10.0",
     "sha256": "^0.2.0",
     "telnet-stream": "^1.0.4",
-    "toml": "^3.0.0",
-    "ts-pegjs": "^0.2.6"
+    "toml": "^3.0.0"
   },
-  "devDependencies": {
-    "@types/arangodb": "^3.5.2",
-    "@types/lodash": "^4.14.144",
-    "@types/pegjs": "^0.10.1",
-    "ts-node": "^8.4.1",
-    "typescript": "^3.6.4"
-  }
+  "devDependencies": {}
 }

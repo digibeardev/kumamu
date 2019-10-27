@@ -1,6 +1,4 @@
-import parser from "../api/parser";
-
-const init = () => {
+module.exports = parser => {
   parser.sub.set(/%b/g, " ");
   parser.sub.set(/%r/g, "\n");
   parser.sub.set(/%t/g, "\t");
@@ -35,5 +33,3 @@ const init = () => {
   parser.sub.set(/%[(]/g, "\u250D");
   parser.sub.set(/%[)]/g, "\u2511");
 };
-
-export default init;
