@@ -1,9 +1,11 @@
 //@ts-check
 
-const { getFiles } = require("./utils/utilities");
+const { getFiles } = require("../utils/utilities");
 
-class MU {
-  constructor() {}
+module.exports = class MU {
+  constructor() {
+    this.init();
+  }
 
   async init() {
     // install api methods.
@@ -13,6 +15,4 @@ class MU {
       console.log(`API '${name}' loaded.`);
     });
   }
-}
-
-module.exports = new MU();
+};

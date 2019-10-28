@@ -22,7 +22,7 @@
     "WEBSOCKETS"
   ],
   "author": "Lemuel Canady",
-  "license": "AGPL-3.0",
+  "license": "MIT",
   "dependencies": {
     "@hapi/joi": "^16.1.7",
     "arangojs": "^6.11.1",
@@ -32,6 +32,5 @@
     "sha256": "^0.2.0",
     "telnet-stream": "^1.0.4",
     "toml": "^3.0.0"
-  },
-  "devDependencies": {}
+  }
 }

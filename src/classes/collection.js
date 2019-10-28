@@ -1,3 +1,4 @@
+//@ts-check
 const db = require("../api/db");
 
 module.exports.Collection = class Collection {
@@ -40,16 +41,24 @@ module.exports.Collection = class Collection {
   /**
    * A lifecycle hook for when a collection is loaded.
    */
-  onLoad() {}
+  async onLoad() {}
 
   async save(obj) {
     return this._collection.save(obj);
   }
 
   /**
+   * Retrieve a document by it's key.
+   * @param {string} key The string key of the document to retrieve
+   */
+  async get(key) {
+    return await this._collection.firstExample({ _key: key });
+  }
+
+  /**
    * Update a pre-existing document in the collection.
    * @param {string} key  The record to update
-   * @param {{}} update The object literal update to make to the record.
+   * @param {Object<string,any>} update The object literal update to make to the record.
    */
   async update(key, update) {
     return this._collection.update(key, update);
@@ -60,6 +69,6 @@ module.exports.Collection = class Collection {
    * @param {string} key The key of the document to remove.
    */
   async delete(key) {
-    return this.collection.remove(key);
+    return this._collection.remove(key);
   }
 };
