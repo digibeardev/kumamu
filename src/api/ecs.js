@@ -94,11 +94,11 @@ class Components {
       .catch(err => console.error(err));
     const comp = this._components.get(component);
     if (comp) {
-      if (comp.data) {
-        const schema = Joi.object(comp.data);
+      if (comp._data) {
+        const schema = Joi.object(comp._data);
         const data = schema.validate({});
-        entity.data[comp] = data;
-        return await db.colls.entities.update(entity._key, entity.data);
+        entity.data[comp._name] = data.value;
+        return await db.colls.entities.update(entity._key, entity);
       }
     }
   }
@@ -115,7 +115,7 @@ class Components {
       .catch(err => console.error(err));
 
     delete entity.data[component];
-    return await db.colls.entities.update(entity._key, entity.data);
+    return await db.colls.entities.update(entity._key, entity);
   }
 
   /**
@@ -134,7 +134,7 @@ class Entity {
    * @param {string} type The type of entity to make.
    */
   async create(name, type = "thing") {
-    return await db.colls.entities.save({ name, type });
+    return await db.colls.entities.save({ name, type, data: {} });
   }
 
   /**
@@ -218,12 +218,10 @@ class Systems {
   }
 }
 
-/**
- * Export the instantiated objects.
- */
 const components = new Components();
 const entity = new Entity();
 const systems = new Systems(components);
+
 module.exports = {
   components,
   entity,

@@ -1,9 +1,6 @@
 //@ts-check
 const { Database, DocumentCollection } = require("arangojs");
-const { getFiles } = require("../utils/utilities");
 const config = require("./config");
-const { Collection } = require("../classes/collection");
-
 /**
  * new DatabaseClass()
  */
@@ -14,11 +11,9 @@ class DatabaseClass {
    * instantiate with the database.
    */
   constructor(collections) {
-    this.db = new Database();
     this._collections = collections;
     /** @type {any} */
     this.colls = [];
-    this.init();
   }
 
   /**
@@ -49,6 +44,7 @@ class DatabaseClass {
    * Initialize the database.
    */
   async init() {
+    this.db = new Database();
     this.db.useBasicAuth(config.database.user, config.database.password);
     const dbs = await this.db.listDatabases();
 
@@ -68,6 +64,7 @@ class DatabaseClass {
     }
 
     // Load collections.
+    const { Collection } = require("../classes/collection");
     for (const collection of this._collections) {
       this.colls[collection] = new Collection(collection);
       await this.colls[collection].init();

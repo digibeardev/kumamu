@@ -3,7 +3,7 @@ const { resolve } = require("path");
 const { getFiles } = require("../utils/utilities");
 const peg = require("pegjs");
 
-export class Parser {
+class Parser {
   constructor() {
     this.peg = readFileSync(resolve(__dirname, "../mushcode.pegjs"), {
       encoding: "utf8"
@@ -115,4 +115,4 @@ export class Parser {
   }
 }
 
-export default new Parser();
+module.exports = new Parser();
