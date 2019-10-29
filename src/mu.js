@@ -5,9 +5,9 @@ const { getFiles } = require("./utils/utilities");
 class MU {
   async init() {
     // install api methods.
-    await getFiles("../api/", async dirent => {
+    await getFiles("../api/", async (dirent, path) => {
       const name = dirent.name.split(".")[0];
-      this[name] = require("./api/" + dirent.name);
+      this[name] = require(path + dirent.name);
       if (typeof this[name].init === "function") {
         await this[name].init();
       }
@@ -15,9 +15,9 @@ class MU {
     });
 
     // Install Components
-    await getFiles("../components/", dirent => {
+    await getFiles("../components/", (dirent, path) => {
       const name = dirent.name.split(".")[0];
-      require("./components/" + dirent.name)(this);
+      require(path + dirent.name)(this);
       console.log(`Component '${name}' loaded`);
     });
   }

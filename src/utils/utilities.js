@@ -9,8 +9,8 @@ const { resolve } = require("path");
  * perform on each file or folder within path.
  *
  * @example
- * getfiles("../api/", dirent => {
- *    let mod = require("../api/" + dirent.name);
+ * getfiles("../api/", (dirent, path) => {
+ *    let mod = require(path + dirent.name);
  *    console.log(`API: '${file.split('.')[0]}' loaded.`);
  * });
  *
@@ -21,6 +21,6 @@ module.exports.getFiles = async (path, func) => {
     withFileTypes: true
   });
   for (const dirent of dir) {
-    await func(dirent);
+    await func(dirent, resolve(__dirname, path) + "/");
   }
 };
