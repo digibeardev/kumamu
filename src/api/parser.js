@@ -15,7 +15,7 @@ class Parser {
   }
 
   async init() {
-    getFiles("../functions/", async (path, file) => {
+    getFiles(resolve(__dirname, "../functions/"), async (path, file) => {
       const mod = await import(path + file.name).catch(error =>
         console.log(error)
       );

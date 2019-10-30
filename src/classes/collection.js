@@ -1,5 +1,6 @@
 //@ts-check
 const db = require("../api/db");
+const Joi = require("@hapi/joi");
 
 module.exports.Collection = class Collection {
   /**
@@ -43,8 +44,65 @@ module.exports.Collection = class Collection {
    */
   async onLoad() {}
 
+  /**
+   * Select all or a filtered list of documents from the collection.
+   * @param {(doc) => Boolean} [filter] Apply a filter callback to the
+   * documents called with the all query.
+   * @example
+   * const els = collName.all(doc => doc.key === value);
+   */
+  async all(filter = Boolean) {
+    // query the database.
+    const query = await db.query(`
+      FOR obj IN ${this._name}
+      RETURN obj 
+    `);
+
+    // Apply the filter
+    let results = await query.all();
+    return results.filter(filter);
+  }
+
+  /**
+   * Define a schema model for the data to be entered
+   * into the document.
+   * @param {*} obj The Joi object to create the schema from.
+   * @example
+   *
+   * const err = this.schema({
+   *    name: Joi.string().required(),
+   *    created: Joi.number().default(moment().unix())
+   * });
+   *
+   */
+  schema(obj) {
+    const schema = Joi.object(obj);
+    this._schema = schema;
+    return this;
+  }
+
+  /**
+   * Save a document to a collection.  If there's a schema defined
+   * then apply it against the document definition.
+   * @param {Object<string,any>} obj The object to save as a document.
+   */
   async save(obj) {
-    return this._collection.save(obj);
+    if (this.schema) {
+      const validation = this._schema.validate(obj);
+      if (validation.value) {
+        return {
+          value: this._collection.save(validation.value)
+        };
+      } else {
+        return {
+          error: validation.error
+        };
+      }
+    } else {
+      return {
+        value: this._collection.save(obj)
+      };
+    }
   }
 
   /**

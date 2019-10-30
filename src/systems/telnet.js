@@ -3,18 +3,31 @@ const net = require("net");
 const config = require("../api/config");
 const { TelnetSocket } = require("telnet-stream");
 
-// create socket connection
-const server = net.createServer(socket => {
-  const tSocket = new TelnetSocket(socket);
+module.exports = mu => {
+  // create socket connection
+  const server = net.createServer(async socket => {
+    const tSocket = new TelnetSocket(socket);
 
-  tSocket.on(
-    "data",
-    /** @param {Buffer} buffer */ buffer => {
-      tSocket.write(buffer.toString("utf-8"));
+    // Send welcome message.
+    mu.msg.send(tSocket, mu.txt.get("connect"));
+
+    const chars = (await mu.db.colls.entities.all()).filter(
+      entity => entity.type === "player"
+    );
+
+    if (chars.length <= 0) {
+      mu.msg.send(tSocket, "Please create your %chImmortal%cn Character.");
     }
-  );
-});
 
-server.listen(config.game.port || 4000, () => {
-  console.log(`Telnet server connected on port: ${config.game.port || 4000}`);
-});
+    tSocket.on(
+      "data",
+      /** @param {Buffer} buffer */ buffer => {
+        tSocket.write(buffer.toString("utf-8"));
+      }
+    );
+  });
+
+  server.listen(config.game.port || 4000, () => {
+    console.log(`Telnet server connected on port: ${config.game.port || 4000}`);
+  });
+};
