@@ -1,1 +1,30 @@
-{}
+[
+  {
+    "name": "immortal",
+    "restricted": "immortal",
+    "code": "i",
+    "level": 10
+  },
+  {
+    "name": "wizard",
+    "restricted": "immortal",
+    "code": "w",
+    "level": 9
+  },
+  {
+    "name": "royalty",
+    "restricted": "immortal wizard",
+    "code": "R",
+    "level": 8
+  },
+  {
+    "name": "connected",
+    "restricted": "immortal wizard",
+    "code": "c"
+  },
+  {
+    "name": "registered",
+    "restricted": "immortal wizard",
+    "code": "r"
+  }
+]

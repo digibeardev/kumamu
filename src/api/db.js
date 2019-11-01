@@ -1,3 +1,6 @@
+const { getFiles } = require("../utils/utilities");
+const { resolve } = require("path");
+
 //@ts-check
 const { Database, DocumentCollection } = require("arangojs");
 const config = require("./config");
@@ -10,9 +13,7 @@ class DatabaseClass {
    * @param {string[]} collections An array of collections to
    * instantiate with the database.
    */
-  constructor(collections) {
-    this._collections = collections;
-    /** @type {any} */
+  constructor() {
     this.colls = [];
   }
 
@@ -60,18 +61,12 @@ class DatabaseClass {
       await this.db
         .createDatabase(config.database.name)
         .catch(error => console.error(error));
+      this.db.useDatabase(config.database.name);
       console.log(`Database ${config.database.name} selected.`);
-    }
-
-    // Load collections.
-    const { Collection } = require("../classes/collection");
-    for (const collection of this._collections) {
-      this.colls[collection] = new Collection(collection);
-      await this.colls[collection].init();
     }
 
     return this;
   }
 }
 
-module.exports = new DatabaseClass(["entities"]);
+module.exports = new DatabaseClass();

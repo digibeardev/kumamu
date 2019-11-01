@@ -20,6 +20,10 @@ class Message {
     );
   }
 
+  end(socket, message) {
+    socket.end(message);
+  }
+
   connect(socket) {
     this.send(
       socket,

@@ -11,9 +11,7 @@ module.exports = mu => {
     // Send welcome message.
     mu.msg.send(tSocket, mu.txt.get("connect"));
 
-    const chars = (await mu.db.colls.entities.all()).filter(
-      entity => entity.type === "player"
-    );
+    const chars = await mu.entities.all(entity => entity.type === "player");
 
     if (chars.length <= 0) {
       mu.msg.send(tSocket, "Please create your %chImmortal%cn Character.");
@@ -22,7 +20,10 @@ module.exports = mu => {
     tSocket.on(
       "data",
       /** @param {Buffer} buffer */ buffer => {
-        tSocket.write(buffer.toString("utf-8"));
+        mu.queues.pQueue.push({
+          socket: tSocket,
+          data: buffer.toString("utf-8")
+        });
       }
     );
   });

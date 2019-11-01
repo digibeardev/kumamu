@@ -11,6 +11,7 @@ module.exports.Collection = class Collection {
   constructor(name) {
     this._name = name;
     this._collection = db.collection(name);
+    this._db = db;
   }
 
   /**
@@ -87,11 +88,11 @@ module.exports.Collection = class Collection {
    * @param {Object<string,any>} obj The object to save as a document.
    */
   async save(obj) {
-    if (this.schema) {
+    if (this._schema) {
       const validation = this._schema.validate(obj);
       if (validation.value) {
         return {
-          value: this._collection.save(validation.value)
+          value: await this._collection.save(validation.value)
         };
       } else {
         return {
@@ -100,7 +101,7 @@ module.exports.Collection = class Collection {
       }
     } else {
       return {
-        value: this._collection.save(obj)
+        value: await this._collection.save(obj)
       };
     }
   }
@@ -119,14 +120,14 @@ module.exports.Collection = class Collection {
    * @param {Object<string,any>} update The object literal update to make to the record.
    */
   async update(key, update) {
-    return this._collection.update(key, update);
+    return await this._collection.update(key, update);
   }
 
   /**
    * Remove a document from the collection.
    * @param {string} key The key of the document to remove.
    */
-  async delete(key) {
+  async remove(key) {
     return this._collection.remove(key);
   }
 };
