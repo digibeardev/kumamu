@@ -17,8 +17,8 @@ module.exports = mu => {
 
       let obj = false;
 
-      if (flags) {
-        obj = mu.flags.hasFlags(await mu.entities.key(socket._key), flags);
+      if (flags && socket._key) {
+        obj = mu.flags.hasFlags(await mu.entities.get(socket._key), flags);
       }
 
       // If there's a match and the enactor passes the flag restriction of

@@ -16,10 +16,7 @@ class Parser {
 
   async init() {
     getFiles(resolve(__dirname, "../functions/"), async (path, file) => {
-      const mod = await import(path + file.name).catch(error =>
-        console.log(error)
-      );
-      await mod.default();
+      if (/^.*.js$/i.exec(file.name)) require(path + file.name)(this);
     });
 
     // import substitutions.

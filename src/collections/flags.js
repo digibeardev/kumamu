@@ -27,6 +27,14 @@ class Flags extends Collection {
   }
 
   /**
+   * Check to see if a flag exists in memory.
+   * @param {string} flag The flag to check for.
+   */
+  exists(flag) {
+    return this._flags.has(flag.toLowerCase());
+  }
+
+  /**
    * @typedef flagDef
    * @property {string} name The name of the flag.
    * @property {string} code The short code for the flag.
