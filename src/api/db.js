@@ -1,6 +1,3 @@
-const { getFiles } = require("../utils/utilities");
-const { resolve } = require("path");
-
 //@ts-check
 const { Database, DocumentCollection } = require("arangojs");
 const config = require("./config");
@@ -8,15 +5,6 @@ const config = require("./config");
  * new DatabaseClass()
  */
 class DatabaseClass {
-  /**
-   *
-   * @param {string[]} collections An array of collections to
-   * instantiate with the database.
-   */
-  constructor() {
-    this.colls = [];
-  }
-
   /**
    * Perform a raw database query using Arango's AQL language.
    * @param {string} aql The AQL query to perform

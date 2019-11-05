@@ -8,6 +8,7 @@ class Entities extends Collection {
 
   async onLoad() {
     this.schema({
+      _key: Joi.string(),
       name: Joi.string().required(),
       type: Joi.string().default("thing"),
       data: Joi.object().default({})
@@ -19,10 +20,11 @@ class Entities extends Collection {
    * @param {Object} options
    * @param {string} options.name The name of the entity to create.
    * @param {string} options.type The type of entity to make.
+   * @param {string} options._key The optional key to be assigned to the entity.
    */
   async create(options) {
-    const { name, type } = options;
-    return await this.save({ name, type });
+    const { name, type, _key } = options;
+    return await this.save({ name, type, _key });
   }
 
   /**

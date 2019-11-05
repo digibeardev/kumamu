@@ -1,5 +1,6 @@
 const Joi = require("@hapi/joi");
 const moment = require("moment");
+const config = require("../api/config");
 
 module.exports = async mu => {
   // Base component.  All entities have access to this data.
@@ -8,11 +9,13 @@ module.exports = async mu => {
     description: "The base component for all objects.",
     schema: {
       contents: Joi.array().default([]),
+      exits: Joi.array().default([]),
       attributes: Joi.array().default([]),
-      owner: Joi.string().default(""),
+      owner: Joi.string().default("0000"),
       created: Joi.number().default(moment().unix()),
       modified: Joi.number().default(moment().unix()),
-      flags: Joi.array().default([])
+      flags: Joi.array().default([]),
+      location: Joi.array().default(config.game.startRoom || "0000")
     }
   });
 
@@ -23,8 +26,7 @@ module.exports = async mu => {
     schema: {
       alias: Joi.string().default(""),
       moniker: Joi.string().default(""),
-      password: Joi.string().default(""),
-      last: Joi.number().default(moment().unix())
+      password: Joi.string().default("")
     }
   });
 };

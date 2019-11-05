@@ -53,6 +53,32 @@ class MU {
       console.log(`Component '${name}' loaded`);
     });
 
+    // Check to see if there's a starting room set.  If not, dig rppm 0.  By
+    // default, if the starting room isn't defined in the config file, it's
+    // going to be 0. Several @ts-ignores whiile I finialize the starting
+    // api.  Everything is a dynamic import at the moment. The linter doesn't
+    // like those. :)
+    // @ts-ignore
+    const rooms = await this.entities.all(entity => entity.type === "room");
+    if (rooms.length <= 0) {
+      console.log("No Rooms found, digging Limbo.");
+      // @ts-ignore
+      const entity = (await this.entities.create({
+        _key: "0000",
+        name: "Limbo",
+        type: "room"
+      })).value;
+      // @ts-ignore
+      const results = await this.components.set(
+        // @ts-ignore
+        await this.entities.get(entity._key),
+        ["base"]
+      );
+      if (results._key) {
+        console.log("Done.  Room Limbo Created.");
+      }
+    }
+
     // Install commands
     await getFiles(resolve(__dirname, "./commands"), (dirent, path) => {
       const name = dirent.name.split(".")[0];
@@ -80,8 +106,7 @@ class MU {
               .split(",")
               .filter(Boolean)
               .filter(line => line.trim())
-              .join("\n")
-              .trim()}`
+              .join("\n")}`
           );
         }
         await require(path + dirent.name + "/" + pkg.main)(this);

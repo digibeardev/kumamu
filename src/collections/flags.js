@@ -219,12 +219,12 @@ class Flags extends Collection {
    * @param  {*} target  The Entity object of the target.
    */
   async canEdit(enactor, target) {
-    const enactorLvl = this.flagLvl(enactor);
-    const targetLvl = this.flagLvl(target);
+    const enactorLvl = await this.flagLvl(enactor);
+    const targetLvl = await this.flagLvl(target);
     if (
       enactor._key === target._key ||
       target.owner === enactor._key ||
-      enactorLvl >= targetLvl
+      enactorLvl > targetLvl
     ) {
       return true;
     } else {

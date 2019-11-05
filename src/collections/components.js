@@ -34,7 +34,7 @@ class Components extends Collection {
     // We only want to save the component if there isn't already one that uses
     // it's name.  Names are case sensitive.
     if (comps.length <= 0) {
-      await this.save({ schema, name, description });
+      await this.save({ name, description });
       this._components.set(name, { schema, name, description });
     } else {
       this._components.set(name, { schema, name, description });
