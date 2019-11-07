@@ -1,7 +1,6 @@
 //@ts-check
 const { getFiles } = require("./utils/utilities");
 const msg = require("./api/msg");
-const { Socket } = require("net");
 const { resolve } = require("path");
 const moment = require("moment");
 
@@ -64,7 +63,7 @@ class MU {
       console.log("No Rooms found, digging Limbo.");
       // @ts-ignore
       const entity = (await this.entities.create({
-        _key: "0000",
+        _key: "0",
         name: "Limbo",
         type: "room"
       })).value;
@@ -121,6 +120,19 @@ class MU {
       const name = dirent.name.split(".")[0];
       console.log(`System '${name}' loaded.`);
     });
+  }
+
+  /**
+   * Force an enactor to use a command.
+   * @param {*} socket The socket object that issued the command.
+   * @param {string} command The command to execute
+   * @param {string[]} args Any args related to the command to pass
+   * into the command.
+   */
+  async exe(socket, command, args) {
+    this.cmds.has(command.toLowerCase())
+      ? await this.cmds.get(command.toLowerCase()).run(socket, args)
+      : null;
   }
 
   /**

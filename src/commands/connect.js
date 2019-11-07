@@ -16,6 +16,7 @@ module.exports = mu => {
             socket._key = char._key;
             socket.last = moment().unix();
             mu.msg.connect(socket);
+            await mu.exe(socket, "look", []);
           } else {
             mu.msg.end(socket, "Invalid password.");
           }

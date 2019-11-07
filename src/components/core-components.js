@@ -11,11 +11,11 @@ module.exports = async mu => {
       contents: Joi.array().default([]),
       exits: Joi.array().default([]),
       attributes: Joi.array().default([]),
-      owner: Joi.string().default("0000"),
+      owner: Joi.string().default("0"),
       created: Joi.number().default(moment().unix()),
       modified: Joi.number().default(moment().unix()),
       flags: Joi.array().default([]),
-      location: Joi.array().default(config.game.startRoom || "0000")
+      location: Joi.array().default(config.game.startRoom || "0")
     }
   });
 

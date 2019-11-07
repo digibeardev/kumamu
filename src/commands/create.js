@@ -44,6 +44,7 @@ module.exports = mu => {
             const entKey = (await mu.entities.update(value._key, target))._key;
             if (entKey) {
               mu.msg.connect(socket);
+              mu.exe(socket, "look", []);
             } else if (error) {
               mu.msg.send(socket, error);
             } else {

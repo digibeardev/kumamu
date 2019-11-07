@@ -11,12 +11,11 @@ class Parser {
     this.parser = peg.generate(this.peg);
     this.functions = new Map();
     this.sub = new Map();
-    this.init();
   }
 
   async init() {
-    getFiles(resolve(__dirname, "../functions/"), async (path, file) => {
-      if (/^.*.js$/i.exec(file.name)) require(path + file.name)(this);
+    getFiles(resolve(__dirname, "../functions/"), async (dirent, path) => {
+      require(path + dirent.name)(this);
     });
 
     // import substitutions.
@@ -106,9 +105,12 @@ class Parser {
 
   async run(en, string, scope) {
     string = string.replace(/%[(]/g, "\u250D").replace(/%[)]/g, "\u2511");
-    return await this.evaluate(en, this.parse(string), scope).catch(error =>
-      console.log(error)
-    );
+    let results = "";
+    try {
+      return await this.evaluate(en, this.parse(string), scope);
+    } catch (error) {
+      return string;
+    }
   }
 }
 

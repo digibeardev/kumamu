@@ -10,7 +10,7 @@ class Message {
    * @param {Object<string,any>} options Any options passed along
    * with with the send statement.
    */
-  send(socket, message, options = {}) {
+  send(socket, message = "", options = {}) {
     socket.write(
       parser
         .subs(message)
@@ -29,6 +29,10 @@ class Message {
       socket,
       `Login successful, Welcome to %ch${config.game.name || "KumaMU"}%cn!`
     );
+  }
+
+  error(socket, error) {
+    this.send(socket, `Uh oh! You've ran into a bug! ${error}\n${error.stack}`);
   }
 
   huh(socket) {
