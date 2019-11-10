@@ -74,11 +74,11 @@ class Parser {
       } else {
         let output = expr.value;
         for (const key in scope) {
-          output = output.replace(new RegExp(key + "$", "gi"), scope[key]);
+          output = output.replace(new RegExp(key, "gi"), scope[key]);
         }
         return output;
       }
-    } else if ((expr.type = "function")) {
+    } else if (expr.type === "function") {
       const operator = expr.operator;
       if (operator.type === "word" && this.functions.has(operator.value)) {
         return await this.functions.get(operator.value)(en, expr.args, scope);

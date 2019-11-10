@@ -232,6 +232,24 @@ class Flags extends Collection {
     }
   }
 
+  async name(enactor, target) {
+    return (await this.canEdit(enactor, target))
+      ? `${
+          target.data.base.player
+            ? target.data.base.player.moniker
+              ? target.data.base.player.moniker + (await this.flagCodes(target))
+              : target.name + (await this.flagCodes(target))
+            : target.name + (await this.flagCodes(target))
+        }`
+      : `${
+          target.data.base.player
+            ? target.data.base.player.moniker
+              ? target.data.base.player.moniker
+              : target.name
+            : target.name
+        }`;
+  }
+
   /**
    *
    * @param {*} target The entity object to retrieve a flag

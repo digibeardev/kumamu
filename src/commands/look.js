@@ -1,19 +1,45 @@
 const { getEntities } = require("../utils/utilities");
 
 module.exports = mu => {
-  let output = "";
+  const nameFormat = async ({ enactor, target, scope }) => {
+    if (await mu.flags.canEdit(enactor, target)) {
+      if (
+        mu.attrs.has(target, `nameformat`) &&
+        enactor.data.base.location === target._key
+      ) {
+        let text = await mu.attrs.get(target, `nameformat`);
+        for (const param in scope) {
+          text = text.replace(param, scope[param], "g");
+        }
+        return await mu.parser.run(enactor, text, scope);
+      } else {
+        return `${mu.flags.name(enactor, target) +
+          (await mu.flags.flagCodes(target))}`;
+      }
+    } else {
+      return `${mu.flags.name(enactor, target)}`;
+    }
+  };
 
-  /**
-   * Display an entity name, based on the permissions of the looker.
-   * @param {*} enactor The entity triggering the command
-   * @param {*} target The subject of the command.
-   */
-  const name = async (enactor, target) =>
-    (await mu.flags.canEdit(enactor, target))
-      ? mu.attrs.has(target, "nameformat")
-        ? await target.attr.get(target, "nameformat")
-        : `${target.name + (await mu.flags.flagCodes(target))}`
-      : `${target.name}`;
+  const descFormat = async ({ enactor, target, scope }) => {
+    if (await mu.flags.canEdit(enactor, target)) {
+      if (
+        mu.attrs.has(target, `descformat`) &&
+        enactor.data.base.location === target._key
+      ) {
+        let text = await mu.attrs.get(target, `descformat`);
+        for (const param in scope) {
+          text = text.replace(param, scope[param], "g");
+        }
+        return await mu.parser.run(enactor, text, scope);
+      } else {
+        return `${mu.flags.name(enactor, target) +
+          (await mu.flags.flagCodes(target))}`;
+      }
+    } else {
+      return `${mu.flags.name(enactor, target)}`;
+    }
+  };
 
   /**
    *
@@ -44,9 +70,13 @@ module.exports = mu => {
     name: "look",
     pattern: /^(?:l|l[ook]+?)(\s+?.*)?/i,
     flags: "connected",
-    run: async (socket, data) => {
+    run: async (socket, data, scope = {}) => {
       const { enactor, target } = await getEntities(socket, data[1]);
-      const desc = `${await name(enactor, target)}`;
+      const desc = await nameFormat({
+        enactor,
+        target,
+        scope: { ...scope, ...{ "%0": await mu.flags.name(enactor, target) } }
+      });
 
       mu.msg.send(socket, desc);
     }
