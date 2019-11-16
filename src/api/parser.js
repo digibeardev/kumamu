@@ -14,10 +14,6 @@ class Parser {
   }
 
   async init() {
-    getFiles(resolve(__dirname, "../functions/"), async (dirent, path) => {
-      require(path + dirent.name)(this);
-    });
-
     // import substitutions.
     require("../utils/subs")(this);
   }
@@ -54,10 +50,11 @@ class Parser {
 
   subs(text) {
     const entries = Array.from(this.sub.entries());
+    let results = typeof text === "string" ? text : text.string;
     for (let [k, v] of entries) {
-      text = text.replace(k, v);
+      results = results.replace(k, v);
     }
-    return text;
+    return results;
   }
 
   /**
@@ -103,14 +100,84 @@ class Parser {
     return string.replace(/%[cCxX]./g, "");
   }
 
-  async run(en, string, scope) {
-    string = string.replace(/%[(]/g, "\u250D").replace(/%[)]/g, "\u2511");
-    let results = "";
+  async run(en, string, scope, parse = true) {
+    if (parse)
+      string = string.replace(/%[(]/g, "\u250D").replace(/%[)]/g, "\u2511");
     try {
-      return await this.evaluate(en, this.parse(string), scope);
+      return {
+        results: await this.evaluate(en, this.parse(string), scope),
+        error: undefined
+      };
     } catch (error) {
-      return string;
+      return {
+        results: undefined,
+        error
+      };
     }
+  }
+
+  async string(en, text, scope) {
+    let parens = -1;
+    let brackets = -1;
+    let match = false;
+    let workStr = "";
+    let output = "";
+    let start = -1;
+    let end = -1;
+
+    // Loop through the text looking for brackets.
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === "[") {
+        brackets = brackets > 0 ? brackets + 1 : 1;
+        start = start > 0 ? start : i;
+        match = true;
+      } else if (text[i] === "]") {
+        brackets = brackets - 1;
+      } else if (text[i] === "(") {
+        parens = parens > 0 ? parens + 1 : 1;
+      } else if (text[i] === ")") {
+        parens = parens - 1;
+      }
+
+      // Check to see if the brackets are evenly matched.  If so
+      // process that portion of the string and replace it.
+      if (match && brackets !== 0 && parens !== 0) {
+        workStr += text[i];
+      } else if (match && brackets === 0 && parens === 0) {
+        // If the brackets are zeroed out, replace the portion of
+        // the string with evaluated code.
+        workStr += text[i];
+        end = i;
+        if (end) {
+          let results = await this.run(en, workStr, scope, false);
+          let { results: res, error } = results;
+          if (error) {
+            output += await this.string(en, workStr, scope).catch(error =>
+              console.log(error)
+            );
+          } else {
+            output += res;
+          }
+
+          // Reset the count variables
+          brackets = -1;
+          parens = -1;
+          start = -1;
+          end = -1;
+          match = false;
+          workStr = "";
+        }
+      } else {
+        if (text[i].match(/[\[\]\(\)]/)) {
+          workStr += text[i];
+        } else {
+          output += text[i];
+        }
+      }
+    }
+
+    // Return the evaluated text.
+    return output ? output : workStr;
   }
 }
 

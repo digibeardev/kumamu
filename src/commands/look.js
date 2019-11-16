@@ -13,32 +13,37 @@ module.exports = mu => {
         }
         return await mu.parser.run(enactor, text, scope);
       } else {
-        return `${mu.flags.name(enactor, target) +
-          (await mu.flags.flagCodes(target))}`;
+        return `${await mu.flags.name(enactor, target)}`;
       }
     } else {
-      return `${mu.flags.name(enactor, target)}`;
+      return `${await mu.flags.name(enactor, target)}`;
     }
   };
 
-  const descFormat = async ({ enactor, target, scope }) => {
-    if (await mu.flags.canEdit(enactor, target)) {
-      if (
-        mu.attrs.has(target, `descformat`) &&
-        enactor.data.base.location === target._key
-      ) {
-        let text = await mu.attrs.get(target, `descformat`);
-        for (const param in scope) {
-          text = text.replace(param, scope[param], "g");
+  const contents = async (enactor, target, scope) => {
+    let text = "";
+    const entities = await mu.entities.all(
+      entity =>
+        entity.data.base.location === target._key && entity.type !== "room"
+    );
+
+    if (mu.attrs.has(target, "conformat")) {
+      text = await mu.parser.string(
+        enactor,
+        mu.attrs.get(target, "conformat"),
+        {
+          ...scope,
+          ...{ "%0": entities }
         }
-        return await mu.parser.run(enactor, text, scope);
-      } else {
-        return `${mu.flags.name(enactor, target) +
-          (await mu.flags.flagCodes(target))}`;
-      }
+      );
     } else {
-      return `${mu.flags.name(enactor, target)}`;
+      text = target.type === "room" ? "Contents:" : "Carrying";
+      for (entity of entities) {
+        text += "\n" + (await mu.flags.name(enactor, entity));
+      }
     }
+
+    return text;
   };
 
   /**
@@ -72,11 +77,21 @@ module.exports = mu => {
     flags: "connected",
     run: async (socket, data, scope = {}) => {
       const { enactor, target } = await getEntities(socket, data[1]);
-      const desc = await nameFormat({
-        enactor,
-        target,
-        scope: { ...scope, ...{ "%0": await mu.flags.name(enactor, target) } }
-      });
+
+      // Name format
+      let desc =
+        (await nameFormat({
+          enactor,
+          target,
+          scope: { ...scope, ...{ "%0": await mu.flags.name(enactor, target) } }
+        })) + "\n";
+
+      // TODO: Add DescFormat
+      desc += mu.attrs.has(target, "desc")
+        ? (await mu.attrs.get(target, "description")) + "\n"
+        : "You see nothing special.\n";
+
+      desc += await contents(enactor, target, scope);
 
       mu.msg.send(socket, desc);
     }

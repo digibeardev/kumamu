@@ -1,4 +1,3 @@
-//@ts-check
 const { getFiles } = require("./utils/utilities");
 const msg = require("./api/msg");
 const { resolve } = require("path");
@@ -12,9 +11,6 @@ class MU {
     this.scope = {};
   }
 
-  /**
-   * Code launched when this api module is loaded.
-   */
   async init() {
     // install api.
     await getFiles(resolve(__dirname, "./api/"), async (dirent, path) => {
@@ -39,6 +35,12 @@ class MU {
       }
     );
 
+    // Install Functions
+    getFiles(resolve(__dirname, "./functions/"), async (dirent, path) => {
+      await require(path + dirent.name)(this);
+      console.log(`Functions '${dirent.name.split(".")[0]}' loaded.`);
+    });
+
     // Load Middleware
     getFiles(resolve(__dirname, "./middleware"), (dirent, path) => {
       require(path + dirent.name)(this);
@@ -52,7 +54,7 @@ class MU {
       console.log(`Component '${name}' loaded`);
     });
 
-    // Check to see if there's a starting room set.  If not, dig rppm 0.  By
+    // Check to see if there's a starting room set.  If not, dig room 0.  By
     // default, if the starting room isn't defined in the config file, it's
     // going to be 0. Several @ts-ignores whiile I finialize the starting
     // api.  Everything is a dynamic import at the moment. The linter doesn't
@@ -61,12 +63,14 @@ class MU {
     const rooms = await this.entities.all(entity => entity.type === "room");
     if (rooms.length <= 0) {
       console.log("No Rooms found, digging Limbo.");
-      // @ts-ignore
-      const entity = (await this.entities.create({
-        _key: "0",
-        name: "Limbo",
-        type: "room"
-      })).value;
+
+      const entity = (
+        await this.entities.create({
+          _key: "0",
+          name: "Limbo",
+          type: "room"
+        })
+      ).value;
       // @ts-ignore
       const results = await this.components.set(
         // @ts-ignore

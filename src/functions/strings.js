@@ -1,4 +1,5 @@
-module.exports = parser => {
+module.exports = mu => {
+  const parser = mu.parser;
   /**
    * Find the remainder for string length.
    * @param {string} string The string to process.
@@ -27,10 +28,10 @@ module.exports = parser => {
     );
   };
 
-  // Center a string.
-  parser.setFunction("center", async (en, args, scope) => {
+  // Add padding to a string.
+  parser.setFunction("padding", async (en, args, scope) => {
     if (args.length < 2) {
-      throw new SyntaxError("center requires at least 2 arguments");
+      throw new SyntaxError("padding requires at least 2 arguments");
     } else {
       const message = args[0]
         ? await parser.evaluate(en, args[0], scope)
@@ -38,15 +39,48 @@ module.exports = parser => {
       const width = args[1]
         ? parseInt(await parser.evaluate(en, args[1], scope), 10)
         : "#-2 WIDTH IS REQUIRED";
-      const repeat = args[2] ? await parser.evaluate(en, args[2], scope) : "";
+      const repeat = args[2] ? await parser.evaluate(en, args[2], scope) : " ";
+      const type = args[3]
+        ? (await parser.evaluate(en, args[3], scope)).toLowerCase()
+        : "left";
       const length = (width - parser.stripSubs(message).length) / 2;
       const remainder = (width - parser.stripSubs(message).length) % 2;
 
-      return (
-        repeatString(repeat, length) +
-        message +
-        repeatString(repeat, length + remainder)
-      );
+      switch (type) {
+        case "center":
+          return (
+            repeatString(repeat, length) +
+            message +
+            repeatString(repeat, length + remainder)
+          );
+        case "left":
+          return message + repeatString(repeat, length * 2);
+        case right:
+          return repeatString(repeat, length * 2) + message;
+        default:
+          return (
+            repeatString(repeat, length) +
+            message +
+            repeatString(repeat, length + remainder)
+          );
+      }
     }
+  });
+
+  // ljust(<string>, <padding>[, <repeat>])
+  parser.setFunction("ljust", async (en, args, scope) => {
+    const string = args[0] ? await parser.evaluate(en, args[0], scope) : "";
+    const padding = args[1]
+      ? await parser.evaluate(en, args[1], scope)
+      : string.length;
+    const repeat = args[2] ? await parser.evaluate(en, args[2], scope) : " ";
+    const message = string ? string : repeat;
+
+    return await parser.run(
+      en,
+      `[padding(${message},${padding},${repeat})]`,
+      scope,
+      false
+    );
   });
 };

@@ -2,16 +2,20 @@ module.exports = mu => {
   // Get target and enactor information.  Helper function.
   const getEntities = async (socket, data) => {
     const enactor = await mu.entities.get(socket._key);
-    const name = data[2].trim().toLowerCase();
+    const currLoc = await mu.entities.get(enactor.data.base.location);
+    const name = data.trim().toLowerCase();
     let target;
     if (name === "me") {
       target = enactor;
+    } else if (name === "here") {
+      target = currLoc;
     } else {
-      target = await mu.entities.all(
-        entity =>
-          entity._key === name ||
-          entity.name.toLowerCase() === name ||
-          entity.data.player.alias.toLowerCase() === name
+      target = await mu.entities.all(entity =>
+        entity._key === name ||
+        entity.name.toLowerCase() === name ||
+        entity.data.player
+          ? entity.data.player.alias.toLowerCase() === name
+          : false
       );
 
       // If there are entities in the array, get the first instance.
@@ -75,7 +79,7 @@ module.exports = mu => {
     run: async (socket, data) => {
       const name = data[1].trim();
       const value = data[3] ? data[3].trim() : null;
-      const { enactor, target } = await getEntities(socket, data);
+      const { enactor, target } = await getEntities(socket, data[2]);
       const edit = await mu.flags.canEdit(enactor, target);
       if (target && edit) {
         const results = await mu.attrs.set({

@@ -7,14 +7,17 @@ module.exports = mu => {
     pattern: /^connect\s+?(.*)\s+?(.*)/i,
     run: async (socket, data) => {
       if (!socket._key) {
-        const char = (await mu.entities.all(
-          entity => entity.name.toLowerCase() === data[1].toLowerCase()
-        ))[0];
+        const char = (
+          await mu.entities.all(
+            entity => entity.name.toLowerCase() === data[1].toLowerCase()
+          )
+        )[0];
 
         if (char) {
           if (char.data.player.password.match(sha256(data[2]))) {
             socket._key = char._key;
             socket.last = moment().unix();
+            mu.queues.sockets.set(char._key, socket);
             mu.msg.connect(socket);
             await mu.exe(socket, "look", []);
           } else {

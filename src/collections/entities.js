@@ -32,17 +32,18 @@ class Entities extends Collection {
    * @param {string} ref Either the name or key of an entity.
    */
   async find(ref) {
-    let char = await this.get(ref);
-
-    // char isn't an entity document.  query for name or alias
-    if (!char) {
-      return (await this._db.query(`
-        FOR obj IN entities
-          FILTER LOWER(obj.name) == "${ref.toLowerCase()}" ||
-            LOWER(obj.data.player.alias) == "${ref.toLowerCase()}"
-          RETURN obj
-      `)).all();
-    }
+    let char = await this.get(ref).catch(() => {
+      // char isn't an entity document.  query for name or alias
+      return this.all(entity => {
+        if (entity.name.toLowerCase() === ref.toLowerCase()) {
+          return entity;
+        } else if (entity.data.player) {
+          if (entity.data.player.alias.toLowerCase() === ref.toLowerCase()) {
+            return entity;
+          }
+        }
+      });
+    });
 
     // if Char is populated return it.
     return char;

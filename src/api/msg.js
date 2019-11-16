@@ -14,8 +14,8 @@ class Message {
     socket.write(
       parser
         .subs(message)
-        .replace("\u250D", "(")
-        .replace("\u2511", ")") + "\r\n",
+        .replace(new RegExp("\u250D", "g"), "(")
+        .replace(new RegExp("\u2511", "g"), ")") + "\r\n",
       "utf-8"
     );
   }

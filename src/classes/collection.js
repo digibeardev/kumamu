@@ -47,7 +47,7 @@ module.exports.Collection = class Collection {
 
   /**
    * Select all or a filtered list of documents from the collection.
-   * @param {(doc) => Boolean} [filter] Apply a filter callback to the
+   * @param {(entity) => any} [filter] Apply a filter callback to the
    * documents called with the all query.
    * @example
    * const els = collName.all(doc => doc.key === value);

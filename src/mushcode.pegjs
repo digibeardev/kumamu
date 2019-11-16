@@ -3,8 +3,6 @@
 // This grammar is really basic, but it gets the job done!
 // Builds an AST to be processed by the game server.
 
-expression =  f:function  {return f} / 
-			 "["_ f: function _ "]"    {return f}
  
 function =  _ call: word "(" _ a: (args)? _ ")" _  
 { 
@@ -15,7 +13,20 @@ function =  _ call: word "(" _ a: (args)? _ ")" _
         location: loc,
         args: Array.isArray(a) ? a : [a]
    	}
+} /
+
+_ "[" _ call: word "(" _ a: (args)? _ ")" _ "]" _  
+{ 
+	const loc = location()
+    return {
+    	type: "function", 
+        operator: {type: "word", value:call},
+        location: loc,
+        args: Array.isArray(a) ? a : [a]
+   	}
 }
+
+
 args = 	a:(arg arg)+ _ t:args* {return [{type: "list", value: a.flat()},...t].flat()}/ 
 
 		a: arg* _ "," _ "," _ t: (args)* 
@@ -30,11 +41,11 @@ args = 	a:(arg arg)+ _ t:args* {return [{type: "list", value: a.flat()},...t].fl
 
 
 
-arg = e: expression {return e}/ w: word { 
-     	const loc = location();
-     	return {type: "word", value: w,   location: loc } 
-     
-     }
+arg = 	f: function {return f} / 
+				w: word { 
+     			const loc = location();
+     			return {type: "word", value: w,   location: loc } 
+				}
 
 
 word = w:[^\(\),\[\]]+ {return w.join("").trim()} 
