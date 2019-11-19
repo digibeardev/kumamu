@@ -16,24 +16,10 @@ class MU {
     await getFiles(resolve(__dirname, "./api/"), async (dirent, path) => {
       const name = dirent.name.split(".")[0];
       this[name] = require(path + dirent.name);
-      if (typeof this[name].init === "function") {
-        await this[name].init();
-      }
+      if (typeof this[name] === "function") await this[name](this);
+      if (typeof this[name].init === "function") await this[name].init();
       console.log(`API '${name}' loaded.`);
     });
-
-    // install collections.
-    await getFiles(
-      resolve(__dirname, "./collections/"),
-      async (dirent, path) => {
-        const name = dirent.name.split(".")[0];
-        this[name] = require(path + dirent.name);
-        if (typeof this[name].init === "function") {
-          await this[name].init();
-        }
-        console.log(`Collection '${name}' loaded.`);
-      }
-    );
 
     // Install Functions
     getFiles(resolve(__dirname, "./functions/"), async (dirent, path) => {
@@ -42,16 +28,9 @@ class MU {
     });
 
     // Load Middleware
-    getFiles(resolve(__dirname, "./middleware"), (dirent, path) => {
-      require(path + dirent.name)(this);
-      console.log(`Middleware '${dirent.name.split(".")[0]}' installed.`);
-    });
-
-    // Install Components
-    await getFiles(resolve(__dirname, "./components"), async (dirent, path) => {
-      const name = dirent.name.split(".")[0];
+    getFiles(resolve(__dirname, "./middleware"), async (dirent, path) => {
       await require(path + dirent.name)(this);
-      console.log(`Component '${name}' loaded`);
+      console.log(`Middleware '${dirent.name.split(".")[0]}' installed.`);
     });
 
     // Check to see if there's a starting room set.  If not, dig room 0.  By
@@ -64,22 +43,26 @@ class MU {
     if (rooms.length <= 0) {
       console.log("No Rooms found, digging Limbo.");
 
-      const entity = (
-        await this.entities.create({
-          _key: "0",
-          name: "Limbo",
-          type: "room"
-        })
-      ).value;
-      // @ts-ignore
-      const results = await this.components.set(
-        // @ts-ignore
-        await this.entities.get(entity._key),
-        ["base"]
-      );
-      if (results._key) {
+      const entity = await this.entities.create({
+        _key: "0",
+        name: "Limbo",
+        type: "room"
+      });
+
+      if (entity._key) {
         console.log("Done.  Room Limbo Created.");
+      } else {
+        console.log(
+          `Error: Limbo not dug: ${entity.dataPath} ${entity.message}`
+        );
       }
+    }
+
+    // In case the game didn't go down clean, scrub through the database for
+    // players and remove their 'connected' flags.
+    const players = await this.entities.all(entity => entity.type === "player");
+    for (const player of players) {
+      await this.flags.set(player, "!connected");
     }
 
     // Install commands

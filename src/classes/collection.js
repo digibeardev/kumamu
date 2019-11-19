@@ -1,6 +1,6 @@
 //@ts-check
-const db = require("../api/db");
-const Joi = require("@hapi/joi");
+const db = require("../api/db/db");
+const Ajv = require("ajv");
 
 module.exports.Collection = class Collection {
   /**
@@ -28,16 +28,12 @@ module.exports.Collection = class Collection {
       entry.name === this._name ? true : false
     );
 
-    if (collections.length <= 0) {
-      await this._collection.create().catch(async () => {
-        await this._collection.get().catch(error => console.error(error));
-        await this.onLoad();
-      });
-    } else {
-      if (typeof this.onLoad === "function") {
-        await this.onLoad();
-      }
-    }
+    await this._collection.create().catch(async () => {
+      await this._collection.get().catch(error => console.error(error));
+      await this.onLoad();
+    });
+    await this._collection.get().catch(error => console.error(error));
+    await this.onLoad();
   }
 
   /**
@@ -65,20 +61,29 @@ module.exports.Collection = class Collection {
   }
 
   /**
-   * Define a schema model for the data to be entered
-   * into the document.
-   * @param {*} obj The Joi object to create the schema from.
+   * Define a schema data to be entered into the document.
+   * @param {Object<string,any>} obj The JSON validation schema object to be
+   * matched against
    * @example
-   *
-   * const err = this.schema({
-   *    name: Joi.string().required(),
-   *    created: Joi.number().default(moment().unix())
-   * });
+   * schema({
+   *    foo: {
+   *      type: "string",
+   *      required: true,
+   *      default: "bar"
+   *    }
+   * })
    *
    */
   schema(obj) {
-    const schema = Joi.object(obj);
+    const ajv = new Ajv({ useDefaults: true });
+    const schema = { type: "object" };
+    schema.required = obj.required ? obj.required : [];
+    delete obj.required;
+    schema.properties = obj;
+
+    ajv.compile(schema);
     this._schema = schema;
+    this._validator = ajv.compile(schema);
     return this;
   }
 
@@ -88,22 +93,11 @@ module.exports.Collection = class Collection {
    * @param {Object<string,any>} obj The object to save as a document.
    */
   async save(obj) {
-    if (this._schema) {
-      const validation = this._schema.validate(obj);
-      if (validation.value) {
-        return {
-          value: await this._collection.save(validation.value)
-        };
-      } else {
-        return {
-          error: validation.error
-        };
-      }
-    } else {
-      return {
-        value: await this._collection.save(obj)
-      };
-    }
+    return this._schema
+      ? this._validator(obj)
+        ? await this._collection.save(obj)
+        : this._validator.errors[0]
+      : await this._collection.save(obj);
   }
 
   /**

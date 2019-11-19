@@ -1,8 +1,7 @@
 //@ts-check
 
-const { Collection } = require("../classes/collection");
-const entities = require("./entities");
-const Joi = require("@hapi/joi");
+const { Collection } = require("../../../classes/collection");
+const entities = require("../entities");
 
 class Flags extends Collection {
   /**
@@ -15,15 +14,18 @@ class Flags extends Collection {
   }
 
   async onLoad() {
+    // No need to keep stale flag references!
+    await this._collection.truncate();
     this.schema({
-      name: Joi.string().required(),
-      restricted: Joi.string().default(""),
-      level: Joi.number().default(0),
-      code: Joi.string().default("")
+      required: ["name"],
+      name: { type: "string" },
+      restricted: { type: "string", default: "" },
+      level: { type: "number", default: 0 },
+      code: { type: "string", default: "" }
     });
 
     // @ts-ignore
-    await this.create(require("../../data/flags.json"));
+    await this.create(require("../../../../data/flags.json"));
   }
 
   /**
@@ -50,25 +52,24 @@ class Flags extends Collection {
    * @param {flagDef[]} flags An array of flag objects.
    */
   async create(flags = []) {
-    // Create a validation object.
+    const query = await this.all();
 
     for (const flag of flags) {
       // Query the database for the flag name and return an
       // array of matches.
-      const query = await this.all(flg => flg.name === flag.name);
 
       // If the flag isn't represented in the db, save a copy.
-      if (query.length <= 0) {
+      if (query.filter(flg => flg.name === flag.name).length <= 0) {
         await this.save(flag).catch(err => console.error(err));
+        this._validator(flag)
+          ? this._flags.set(flag.name.toLowerCase(), flag)
+          : false;
       } else {
         // If it's present, validate the data and update the
         // _flags list.
-        try {
-          const data = this._schema.validate(flag);
-          this._flags.set(flag.name.toLowerCase(), data.value);
-        } catch (error) {
-          console.error(error.stack);
-        }
+        this._validator(flag)
+          ? this._flags.set(flag.name.toLowerCase(), flag)
+          : false;
       }
     }
   }
@@ -118,7 +119,7 @@ class Flags extends Collection {
   async set(target, flags) {
     // First, let's make a Set object to hold our working data.  You can't
     // have repeating values - so it'll filter any repeats for us.
-    const flagSet = new Set(target.data.base.flags);
+    const flagSet = new Set(target.flags);
 
     flags.split(" ").forEach(flag => {
       //Check for flag removals
@@ -134,7 +135,7 @@ class Flags extends Collection {
     });
 
     try {
-      target.data.base.flags = [...flagSet];
+      target.flags = [...flagSet];
       const updated = await entities.update(target._key, target);
       if (updated) {
         return updated;
@@ -176,7 +177,7 @@ class Flags extends Collection {
           results.push(false);
         }
         // A normal search, Found it!
-      } else if (obj.data.base.flags.indexOf(flag) !== -1) {
+      } else if (obj.flags.indexOf(flag) !== -1) {
         results.push(true);
         // ... Or not.
       } else if (/^.+\|.+/g.exec(flag)) {
@@ -235,19 +236,11 @@ class Flags extends Collection {
   async name(enactor, target) {
     return (await this.canEdit(enactor, target))
       ? `${
-          target.data.base.player
-            ? target.data.base.player.moniker
-              ? target.data.base.player.moniker + (await this.flagCodes(target))
-              : target.name + (await this.flagCodes(target))
+          target.moniker
+            ? target.moniker + (await this.flagCodes(target))
             : target.name + (await this.flagCodes(target))
         }`
-      : `${
-          target.data.base.player
-            ? target.data.base.player.moniker
-              ? target.data.base.player.moniker
-              : target.name
-            : target.name
-        }`;
+      : `${target.moniker ? target.moniker : target.name}`;
   }
 
   /**
@@ -257,7 +250,7 @@ class Flags extends Collection {
    */
   async flagLvl(target) {
     let lvl = 0;
-    for (const flag of target.data.base.flags) {
+    for (const flag of target.flags) {
       const flgLvl = this._flags.get(flag).level;
       // if it's lower than the previous result, replace it
       if (flgLvl > lvl) {
@@ -276,7 +269,7 @@ class Flags extends Collection {
   async flagCodes(target) {
     if (target) {
       let output = `%(#${target._key}${target.type[0].toUpperCase()}`;
-      for (const flag of target.data.base.flags) {
+      for (const flag of target.flags) {
         try {
           let flg;
           if (this._flags.has(flag)) {

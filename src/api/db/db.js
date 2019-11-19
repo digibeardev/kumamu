@@ -1,6 +1,6 @@
 //@ts-check
 const { Database, DocumentCollection } = require("arangojs");
-const config = require("./config");
+const config = require("../config");
 /**
  * new DatabaseClass()
  */
@@ -43,13 +43,12 @@ class DatabaseClass {
 
       // Created, use the database
       await this.db.get().catch(error => console.error(error));
-      console.log(`Database ${config.database.name} initialized.`);
     } else {
       // New database, create it.
       await this.db
-        .createDatabase(config.database.name)
+        .createDatabase(config.database.name || "netdb")
         .catch(error => console.error(error));
-      this.db.useDatabase(config.database.name);
+      this.db.useDatabase(config.database.name || "netdb");
       console.log(`Database ${config.database.name} selected.`);
     }
 

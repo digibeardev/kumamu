@@ -5,7 +5,7 @@ module.exports = mu => {
     if (await mu.flags.canEdit(enactor, target)) {
       if (
         mu.attrs.has(target, `nameformat`) &&
-        enactor.data.base.location === target._key
+        enactor.location === target._key
       ) {
         let text = await mu.attrs.get(target, `nameformat`);
         for (const param in scope) {
@@ -22,10 +22,17 @@ module.exports = mu => {
 
   const contents = async (enactor, target, scope) => {
     let text = "";
-    const entities = await mu.entities.all(
-      entity =>
-        entity.data.base.location === target._key && entity.type !== "room"
-    );
+    const entities = await mu.entities.all(entity => {
+      if (entity.location === target._key && entity.type !== "room") {
+        if (entity.type === "player") {
+          if (mu.flags.hasFlags(entity, "connected")) {
+            return entity;
+          }
+        } else {
+          return entity;
+        }
+      }
+    });
 
     if (mu.attrs.has(target, "conformat")) {
       text = await mu.parser.string(
@@ -53,7 +60,7 @@ module.exports = mu => {
    */
   const getEntities = async (socket, data) => {
     const enactor = await mu.entities.get(socket._key);
-    const currLoc = await mu.entities.get(enactor.data.base.location);
+    const currLoc = await mu.entities.get(enactor.location);
     const name = data ? data.trim().toLowerCase() || "here" : "here";
     const target =
       name === "me"
@@ -64,7 +71,7 @@ module.exports = mu => {
             entity._key === name ||
             entity.name.toLowerCase() === name ||
             entity.data.player
-              ? entity.data.player.alias.toLowerCase() === name
+              ? entity.alias.toLowerCase() === name
               : mu.msg.send(socket, "I can't find what you're looking for.")
           );
 

@@ -15,7 +15,7 @@ module.exports = mu => {
         // matching the requested name.
         const matches = chars.filter(entity =>
           entity.name.toLowerCase() === data[1].toLowerCase() ||
-          entity.data.player.alias === data[1].toLowerCase()
+          entity.alias === data[1].toLowerCase()
             ? true
             : false
         );
@@ -26,29 +26,26 @@ module.exports = mu => {
             name: data[1],
             type: "player"
           });
-          const { value, error } = results;
-          if (value._key && !error) {
-            // No error from validating and saving the data.
-            const entity = await mu.entities.get(value._key);
-            const target = await mu.components.set(entity, ["base", "player"]);
 
-            socket._key = value._key;
+          if (results._key) {
+            // No error from validating and saving the data.
+            const entity = await mu.entities.get(results._key);
+
+            socket._key = results._key;
             socket.last = moment().unix();
-            target.data.base.owner = value._key;
-            target.data.player.password = sha256(data[2]);
+            entity.owner = results._key;
+            entity.password = sha256(data[2]);
             if (chars.length <= 0) {
-              await mu.flags.set(target, "immortal connected");
+              await mu.flags.set(entity, "immortal connected");
             } else {
-              await mu.flags.set(target, "connected");
+              await mu.flags.set(entity, "connected");
             }
-            const entKey = (await mu.entities.update(value._key, target))._key;
+            const entKey = (await mu.entities.update(entity._key, entity))._key;
             if (entKey) {
               mu.msg.connect(socket);
               mu.exe(socket, "look", []);
-            } else if (error) {
-              mu.msg.send(socket, error);
             } else {
-              mu.msg.send(socket, results.error);
+              mu.msg.send(socket, "Unable to create character!");
             }
           }
         } else {
