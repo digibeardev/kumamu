@@ -1,2 +1,2 @@
 const { EventEmitter } = require("events");
-module.exports = new EventEmitter();
+module.exports = mu => new EventEmitter();

@@ -1,8 +1,8 @@
-const { getFiles } = require("../../utils/utilities");
+const { getFiles } = require("../../../utils/utilities");
 const { resolve } = require("path");
 
 module.exports = async mu => {
-  mu["db"] = require("./db");
+  mu["db"] = require("./db")(mu);
   await mu.db.init();
   mu["entities"] = require("./entities");
   await mu.entities.init();
@@ -11,4 +11,6 @@ module.exports = async mu => {
     mu[name] = require(path + dirent.name);
     await mu[name].init();
   });
+
+  return (init = () => {});
 };

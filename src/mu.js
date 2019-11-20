@@ -1,5 +1,4 @@
 const { getFiles } = require("./utils/utilities");
-const msg = require("./api/msg");
 const { resolve } = require("path");
 const moment = require("moment");
 
@@ -12,14 +11,27 @@ class MU {
   }
 
   async init() {
-    // install api.
-    await getFiles(resolve(__dirname, "./api/"), async (dirent, path) => {
-      const name = dirent.name.split(".")[0];
-      this[name] = require(path + dirent.name);
-      if (typeof this[name] === "function") await this[name](this);
-      if (typeof this[name].init === "function") await this[name].init();
-      console.log(`API '${name}' loaded.`);
-    });
+    // install api stage1.
+    await getFiles(
+      resolve(__dirname, "./api/stage1/"),
+      async (dirent, path) => {
+        const name = dirent.name.split(".")[0];
+        this[name] = await require(path + dirent.name)(this);
+        if (typeof this[name].init === "function") await this[name].init();
+        console.log(`API '${name}' loaded.`);
+      }
+    );
+
+    // install api stage2.
+    await getFiles(
+      resolve(__dirname, "./api/stage2/"),
+      async (dirent, path) => {
+        const name = dirent.name.split(".")[0];
+        this[name] = await require(path + dirent.name)(this);
+        if (typeof this[name].init === "function") await this[name].init();
+        console.log(`API '${name}' loaded.`);
+      }
+    );
 
     // Install Functions
     getFiles(resolve(__dirname, "./functions/"), async (dirent, path) => {

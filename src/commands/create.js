@@ -35,6 +35,7 @@ module.exports = mu => {
             socket.last = moment().unix();
             entity.owner = results._key;
             entity.password = sha256(data[2]);
+            entity.location = mu.config.game.startingRoom || "0";
             if (chars.length <= 0) {
               await mu.flags.set(entity, "immortal connected");
             } else {

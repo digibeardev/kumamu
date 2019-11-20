@@ -1,5 +1,5 @@
 //@ts-check
-const db = require("../api/db/db");
+const mu = require("../mu");
 const Ajv = require("ajv");
 
 module.exports.Collection = class Collection {
@@ -10,8 +10,10 @@ module.exports.Collection = class Collection {
    */
   constructor(name) {
     this._name = name;
-    this._collection = db.collection(name);
-    this._db = db;
+    // @ts-ignore
+    this._collection = mu.db.collection(name);
+    // @ts-ignore
+    this._db = mu.db;
   }
 
   /**
@@ -20,7 +22,7 @@ module.exports.Collection = class Collection {
   async init() {
     // Check to see if stats is in the collections list.
     // If not, create it.
-    let collections = await db
+    let collections = await this._db
       .listCollections()
       .catch(error => console.error(error));
 
@@ -50,14 +52,22 @@ module.exports.Collection = class Collection {
    */
   async all(filter = Boolean) {
     // query the database.
-    const query = await db.query(`
+    const query = await this._db.query(`
       FOR obj IN ${this._name}
       RETURN obj 
     `);
 
     // Apply the filter
     let results = await query.all();
-    return results.filter(filter);
+
+    const rtrn = [];
+    for (const entity of results) {
+      if (await filter(entity)) {
+        rtrn.push(entity);
+      }
+    }
+
+    return rtrn;
   }
 
   /**
@@ -79,7 +89,7 @@ module.exports.Collection = class Collection {
     const schema = { type: "object" };
     schema.required = obj.required ? obj.required : [];
     delete obj.required;
-    schema.properties = obj;
+    schema.properties = { ...obj };
 
     ajv.compile(schema);
     this._schema = schema;

@@ -13,30 +13,29 @@ module.exports = mu => {
       }
 
       try {
-        const enactor = await mu.entities.key(socket._key);
-        const curRoom = await mu.entities.key(enactor.location);
+        const enactor = await mu.entities.get(socket._key);
+        const curRoom = await mu.entities.get(enactor.location);
 
         // Check to see if the player has permissions to dig new
         // rooms from this location.
         if (await mu.flags.canEdit(enactor, curRoom)) {
           // Create the new room
-          let room = await mu.entities.insert({
+          let room = await mu.entities.create({
             name: name.trim(),
             type: "room",
-            owner: socket._key,
-            exits: []
+            owner: socket._key
           });
 
-          room = await mu.entities.key(room._key);
+          room = await mu.entities.get(room._key);
 
-          mu.broadcast.send(
+          mu.msg.send(
             socket,
             `%chDone.%cn Room %ch${room.name.trim()}(#${room._key})%cn dug.`
           );
 
           // If a 'to' exit is defined, create the db reference and link.
           if (toExit) {
-            toexit = await mu.db.insert({
+            toexit = await mu.entities.create({
               name: toExit.trim(),
               type: "exit",
               owner: enactor._key,
@@ -45,12 +44,11 @@ module.exports = mu => {
               from: curRoom._key
             });
 
-            toexit = await mu.db.key(toexit._key);
+            toexit = await mu.entities.get(toexit._key);
 
-            await mu.db.update(curRoom._key, {
-              exits: [...curRoom.exits, toexit._key]
-            });
-            mu.broadcast.send(
+            curRoom.exits = [...curRoom.exits, toexit._key];
+            await mu.entities.update(curRoom._key, curRoom);
+            mu.msg.send(
               socket,
               `%chDone.%cn Exit %ch${
                 toexit.name.split(";")[0]
@@ -59,7 +57,7 @@ module.exports = mu => {
           }
 
           if (fromExit) {
-            fromexit = await mu.db.insert({
+            fromexit = await mu.entities.create({
               name: fromExit.trim(),
               type: "exit",
               owner: enactor._key,
@@ -68,12 +66,10 @@ module.exports = mu => {
               from: room._key
             });
 
-            fromexit = await mu.db.key(fromexit._key);
-
-            mu.db.update(room._key, {
-              exits: [...room.exits, fromexit._key]
-            });
-            mu.broadcast.send(
+            fromexit = await mu.entities.get(fromexit._key);
+            room.exits = [...room.exits, fromexit._key];
+            mu.entities.update(room._key, room);
+            mu.msg.send(
               socket,
               `%chDone.%cn Exit %ch${
                 fromexit.name.split(";")[0]
@@ -81,10 +77,10 @@ module.exports = mu => {
             );
           }
         } else {
-          mu.broadcast.send(socket, "Permission denied.");
+          mu.msg.send(socket, "Permission denied.");
         }
       } catch (error) {
-        mu.log.error(error);
+        console.error(error);
       }
     }
   });

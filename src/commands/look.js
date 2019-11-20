@@ -23,7 +23,11 @@ module.exports = mu => {
   const contents = async (enactor, target, scope) => {
     let text = "";
     const entities = await mu.entities.all(entity => {
-      if (entity.location === target._key && entity.type !== "room") {
+      if (
+        entity.location === target._key &&
+        entity.type !== "room" &&
+        entity.type !== "exit"
+      ) {
         if (entity.type === "player") {
           if (mu.flags.hasFlags(entity, "connected")) {
             return entity;
@@ -44,9 +48,40 @@ module.exports = mu => {
         }
       );
     } else {
-      text = target.type === "room" ? "Contents:" : "Carrying";
+      text = target.type === "room" ? "Contents:" : "Carrying:";
       for (entity of entities) {
         text += "\n" + (await mu.flags.name(enactor, entity));
+      }
+    }
+
+    return text;
+  };
+
+  const exits = async (enactor, target, scope) => {
+    let text = "";
+    const entities = await mu.entities.all(entity => {
+      if (entity.location === target._key && entity.type === "exit") {
+        return entity;
+      }
+    });
+
+    if (mu.attrs.has(target, "exitformat")) {
+      text = await mu.parser.string(
+        enactor,
+        mu.attrs.get(target, "exitformat"),
+        {
+          ...scope,
+          ...{ "%0": entities }
+        }
+      );
+    } else {
+      if (entities.length > 0) {
+        text = "\nObvious Exits:\n";
+        const results = [];
+        for (entity of entities) {
+          results.push(await mu.flags.name(enactor, entity));
+        }
+        text += results.join(" ");
       }
     }
 
@@ -99,6 +134,7 @@ module.exports = mu => {
         : "You see nothing special.\n";
 
       desc += await contents(enactor, target, scope);
+      desc += await exits(enactor, target, scope);
 
       mu.msg.send(socket, desc);
     }

@@ -1,7 +1,6 @@
 //@ts-check
-const { Collection } = require("../../classes/collection");
+const { Collection } = require("../../../classes/collection");
 const moment = require("moment");
-const config = require("../config");
 
 class Entities extends Collection {
   constructor(name) {
@@ -16,16 +15,17 @@ class Entities extends Collection {
       .sort();
 
     // Define the schema for an entity
-    const startRoom = config.game.startRoom || "0";
     this.schema({
       required: ["name"],
       _key: { type: "string" },
       name: { type: "string" },
       type: { type: "string", default: "thing" },
-      location: { type: "string", default: startRoom },
+      location: { type: "string", default: "" },
       alias: { type: "string", default: "" },
       moniker: { type: "string", default: "" },
       password: { type: "string", default: "" },
+      to: { type: "string", default: "" },
+      from: { type: "string", default: "" },
       contents: { type: "array", default: [] },
       attributes: { type: "array", default: [] },
       exits: { type: "array", default: [] },
@@ -57,7 +57,7 @@ class Entities extends Collection {
     // to the index, and return it.
     if (mia.length > 0) {
       this.index.push(mia[0]);
-      return mia[0];
+      return mia[0].toString();
 
       // Else we just find the next ID number and inc by one.
     } else {
@@ -74,9 +74,8 @@ class Entities extends Collection {
    * @param {string} options._key The optional key to be assigned to the entity.
    */
   async create(options) {
-    let { name, type, _key } = options;
-    _key = _key ? _key : this.newKey();
-    return await this.save({ name, type, _key });
+    options._key = options._key ? options._key : this.newKey();
+    return await this.save({ ...options });
   }
 
   /**
@@ -87,12 +86,11 @@ class Entities extends Collection {
     let char = await this.get(ref).catch(() => {
       // char isn't an entity document.  query for name or alias
       return this.all(entity => {
-        if (entity.name.toLowerCase() === ref.toLowerCase()) {
+        if (
+          entity.name.toLowerCase() === ref.toLowerCase() ||
+          entity.alias.toLowerCase() === ref.toLowerCase()
+        ) {
           return entity;
-        } else if (entity.data.player) {
-          if (entity.data.player.alias.toLowerCase() === ref.toLowerCase()) {
-            return entity;
-          }
         }
       });
     });

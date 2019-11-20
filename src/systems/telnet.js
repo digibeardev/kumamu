@@ -1,6 +1,5 @@
 //@ts-check
 const net = require("net");
-const config = require("../api/config");
 const { TelnetSocket } = require("telnet-stream");
 
 module.exports = mu => {
@@ -28,7 +27,9 @@ module.exports = mu => {
     );
   });
 
-  server.listen(config.game.port || 4000, () => {
-    console.log(`Telnet server connected on port: ${config.game.port || 4000}`);
+  server.listen(mu.config.game.port || 4000, () => {
+    console.log(
+      `Telnet server connected on port: ${mu.config.game.port || 4000}`
+    );
   });
 };

@@ -1,6 +1,6 @@
 //@ts-check
 
-const { Collection } = require("../../../classes/collection");
+const { Collection } = require("../../../../classes/collection");
 const entities = require("../entities");
 
 class Flags extends Collection {
@@ -25,7 +25,7 @@ class Flags extends Collection {
     });
 
     // @ts-ignore
-    await this.create(require("../../../../data/flags.json"));
+    await this.create(require("../../../../../data/flags.json"));
   }
 
   /**
@@ -237,10 +237,14 @@ class Flags extends Collection {
     return (await this.canEdit(enactor, target))
       ? `${
           target.moniker
-            ? target.moniker + (await this.flagCodes(target))
-            : target.name + (await this.flagCodes(target))
+            ? target.moniker.split(";")[0] + (await this.flagCodes(target))
+            : target.name.split(";")[0] + (await this.flagCodes(target))
         }`
-      : `${target.moniker ? target.moniker : target.name}`;
+      : `${
+          target.moniker
+            ? target.moniker.split(";")[0]
+            : target.name.split(";")[0]
+        }`;
   }
 
   /**
